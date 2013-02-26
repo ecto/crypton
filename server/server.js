@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* Crypton Server, Copyright 2013 SpiderOak, Inc.
  *
  * This file is part of Crypton Server.
@@ -15,8 +16,6 @@
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#!/usr/bin/env node
 'use strict';
 
 var program = require('commander');
