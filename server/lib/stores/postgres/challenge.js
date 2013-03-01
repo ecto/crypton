@@ -50,6 +50,8 @@ exports.saveChallengeAnswer = function saveChallengeAnswer(
       })
       .then(function (result) { return result.rows[0].challenge_id; });
     });
+
+    client.done();
   });
 };
 
@@ -69,14 +71,10 @@ exports.getChallengeAnswer = function (challengeId, callback) {
           throw new db.HandledDatabaseError(null, 'Challenge not found.');
         }
         var row = result.rows[0];
-        return {
-          challengeId: row.challenge_id,
-          accountId: row.account_id,
-          baseKeyringId: row.base_keyring_id,
-          creationTime: row.creation_time,
-          expectedAnswerDigest: row.expected_answer_digest.toString('hex')
-        };
+        return row.challenge_id;
       });
     });
+
+    client.done();
   });
 };

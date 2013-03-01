@@ -51,6 +51,7 @@ exports.listTables = function listTables(callback) {
         tables.push(result.rows[i].tablename);
       }
 
+      client.done();
       callback(null, tables);
     });
   });

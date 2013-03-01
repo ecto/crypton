@@ -28,8 +28,9 @@ exports.HandledDatabaseError = HandledDatabaseError;
 
 
 /* Adapt pg Client object to issue promises instead of using callbacks. */
-var makePromising = exports.makePromising = function makePromising(client) {
+function makePromising(client, done) {
   var self = Object.create(client);
+  self.done = function () { done(); };
 
   ['connect', 'query'].forEach(function (methodName) {
     var clientMethod = client[methodName];
@@ -68,9 +69,14 @@ var makePromising = exports.makePromising = function makePromising(client) {
   self.queries = function (callback, transaction, doQueries) {
     var self = this;
     var promise = transaction ? self.query('begin') : Q.resolve();
+    var savedResult;
     promise = doQueries(promise);
     if (transaction) {
-      promise = promise.then(function () { return self.query('commit'); });
+      promise = promise.then(function (result) { savedResult = result; });
+      promise = promise.then(function () {
+        self.query('commit');
+        return savedResult;
+      });
     }
     return promise.done(function () {
       var args = Array.prototype.slice.call(arguments);
@@ -87,7 +93,8 @@ var makePromising = exports.makePromising = function makePromising(client) {
     });
   };
   return self;
-};
+}
+exports.makePromising = makePromising;
 
 
 // callback with a client. crash the whole app on error.
@@ -101,7 +108,7 @@ function connect() {
     config.database;
 
   var d = Q.defer();
-  pg.connect(conString, function (err, client) {
+  pg.connect(conString, function (err, client, done) {
     if (err) {
       // TODO: retry a few times with delays, so we can survive a quick
       // database hiccup. crash the whole app only if the DB's really
@@ -110,7 +117,7 @@ function connect() {
       console.log(err);
       process.exit(1);
     }
-    client = makePromising(client);
+    client = makePromising(client, done);
     d.resolve(client);
   });
   return d.promise;

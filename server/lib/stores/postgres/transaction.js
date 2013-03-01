@@ -15,14 +15,17 @@
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
 */
+'use strict';
 
-var datastore = require('./');
-var connect = datastore.connect;
+var util = require('./util');
+var connect = require('./db').connect;
+
 var fs = require('fs');
-var transactionQuery = fs.readFileSync(__dirname + '/sql/transaction.sql').toString();
+var transactionQuery = fs.readFileSync(
+  __dirname + '/sql/transaction.sql').toString();
 
-datastore.createTransaction = function (accountId, callback) {
-  connect(function (client) {
+exports.createTransaction = function (accountId, callback) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: 'insert into transaction ("account_id") \
@@ -34,17 +37,19 @@ datastore.createTransaction = function (accountId, callback) {
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
+      client.done();
       callback(null, result.rows[0].transaction_id);
     });
   });
 };
 
-datastore.getTransaction = function (token, callback) {
-  connect(function (client) {
+exports.getTransaction = function (token, callback) {
+  connect().then(function (client) {
     var query = {
       text: 'select * from transaction where transaction_id = $1',
       values: [ token ]
@@ -53,24 +58,27 @@ datastore.getTransaction = function (token, callback) {
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
-      var row = datastore.util.camelizeObject(result.rows[0]);
+      var row = util.camelizeObject(result.rows[0]);
+      client.done();
       callback(null, row);
     });
   });
 };
 
-datastore.deleteTransaction = function (token, callback) {
-  connect(function (client) {
+exports.deleteTransaction = function (token, callback) {
+  connect().then(function (client) {
+    client.done();
     callback();
   });
 };
 
-datastore.updateTransaction = function (token, account, data, callback) {
-  var types = Object.keys(datastore.transaction);
+exports.updateTransaction = function (token, account, data, callback) {
+  var types = Object.keys(exports.transaction);
   var type = data.type;
   var valid = ~types.indexOf(type);
 
@@ -79,8 +87,8 @@ datastore.updateTransaction = function (token, account, data, callback) {
     return;
   }
 
-  connect(function (client) {
-    datastore.getTransaction(token, function (err, transaction) {
+  connect().then(function (client) {
+    exports.getTransaction(token, function (err, transaction) {
       if (account != transaction.accountId) {
         res.send({
           success: false,
@@ -88,16 +96,17 @@ datastore.updateTransaction = function (token, account, data, callback) {
         });
       }
 
-      datastore.transaction[type](data, transaction, function (err) {
+      exports.transaction[type](data, transaction, function (err) {
+        client.done();
         callback(err);
       });
     });
   });
 };
 
-datastore.requestTransactionCommit = function (token, account, callback) {
-  connect(function (client) {
-    datastore.getTransaction(token, function (err, transaction) {
+exports.requestTransactionCommit = function (token, account, callback) {
+  connect().then(function (client) {
+    exports.getTransaction(token, function (err, transaction) {
       if (account != transaction.accountId) {
         res.send({
           success: false,
@@ -106,6 +115,7 @@ datastore.requestTransactionCommit = function (token, account, callback) {
       }
 
       commit.request(transaction.transactionId, function (err) {
+        client.done();
         // TODO handle err
         callback();
       });
@@ -113,10 +123,10 @@ datastore.requestTransactionCommit = function (token, account, callback) {
   });
 };
 
-datastore.transaction = {};
+exports.transaction = {};
 
-datastore.transaction.addContainer = function (data, transaction, callback) {
-  connect(function (client) {
+exports.transaction.addContainer = function (data, transaction, callback) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: 'insert into transaction_add_container \
@@ -131,17 +141,19 @@ datastore.transaction.addContainer = function (data, transaction, callback) {
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
+      client.done();
       callback();
     });
   });
 };
 
-datastore.transaction.addContainerSessionKey = function (data, transaction, callback) {
-  connect(function (client) {
+exports.transaction.addContainerSessionKey = function (data, transaction, callback) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: 'insert into transaction_add_container_session_key \
@@ -157,17 +169,19 @@ datastore.transaction.addContainerSessionKey = function (data, transaction, call
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
+      client.done();
       callback();
     });
   });
 };
 
-datastore.transaction.addContainerSessionKeyShare = function (data, transaction, callback) {
-  connect(function (client) {
+exports.transaction.addContainerSessionKeyShare = function (data, transaction, callback) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: 'insert into transaction_add_container_session_key_share \
@@ -186,17 +200,19 @@ datastore.transaction.addContainerSessionKeyShare = function (data, transaction,
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
+      client.done();
       callback();
     });
   });
 };
 
-datastore.transaction.addContainerRecord = function (data, transaction, callback) {
-  connect(function (client) {
+exports.transaction.addContainerRecord = function (data, transaction, callback) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: "\
@@ -219,10 +235,12 @@ datastore.transaction.addContainerRecord = function (data, transaction, callback
     client.query(query, function (err, result) {
       if (err) {
         console.log(err);
+        client.done();
         callback('Database error');
         return;
       }
 
+      client.done();
       callback();
     });
   });
@@ -231,7 +249,7 @@ datastore.transaction.addContainerRecord = function (data, transaction, callback
 var commit = {};
 
 commit.request = function (transactionId, callback) {
-  connect(function (client) {
+  connect().then(function (client) {
     var query = {
       /*jslint multistr: true*/
       text: '\
@@ -244,12 +262,12 @@ commit.request = function (transactionId, callback) {
       ]
     };
 
-    client.query(query, callback);
+    client.query(query, function () { client.done(); callback(); });
   });
 };
 
 commit.troll = function () {
-  connect(function (client) {
+  connect().then(function (client) {
     /*jslint multistr: true*/
     var query = '\
       select * from transaction \
@@ -278,7 +296,7 @@ commit.troll = function () {
 setInterval(commit.troll, 100);
 
 commit.finish = function (transactionId) {
-  connect(function (client) {
+  connect().then(function (client) {
     var tq = transactionQuery
       .replace(/\{\{hostname\}\}/gi, 'hostname')
       .replace(/\{\{transactionId\}\}/gi, transactionId);

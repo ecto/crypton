@@ -90,6 +90,8 @@ exports.saveAccount = function saveAccount(account, callback) {
         throw err;
       });
     });
+
+    client.done();
   });
 };
 
@@ -148,6 +150,8 @@ exports.getAccount = function getAccount(username, callback) {
         };
       });
     });
+
+    client.done();
   });
 };
 
@@ -181,5 +185,7 @@ exports.deleteAccount = function deleteAccount(username, callback) {
         }
       });
     });
+
+    client.done();
   });
 };

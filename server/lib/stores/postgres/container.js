@@ -15,12 +15,13 @@
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
 */
+'use strict';
 
-var datastore = require('./');
-var connect = datastore.connect;
+var util = require('./util');
+var connect = require('./db').connect;
 
 exports.getContainerRecords = function (containerNameHmac, accountId, callback) {
-  connect(function (client) {
+  connect().then(function (client) {
     var query = {
       // TODO limit to to_account_id
       /*jslint multistr: true*/
@@ -50,10 +51,11 @@ exports.getContainerRecords = function (containerNameHmac, accountId, callback) 
           }
         });
 
-        row = datastore.util.camelizeObject(row);
+        row = util.camelizeObject(row);
         records.push(row);
       });
 
+      client.done();
       callback(null, records);
     });
   });
