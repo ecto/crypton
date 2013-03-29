@@ -101,6 +101,10 @@ When an account is created, Crypton generates the following pieces of data:
 * `keypair_ciphertext`: many bytes, output of
   `AES(keypair_key, keypair_iv).encrypt(keypair)`.
 * `symkey_ciphertext`: many bytes, output of `keypair.encrypt(symkey)`.
+* `challenge_key_salt`: 32 random bytes, salt used by KDV when generating
+  `challenge_key`.
+* `challenge_key`: output of `KDF(challenge_key_salt, passphrase)`, used for
+  authentication.
 
 In order to enable a client to retrieve and decrypt the various keys when all
 it knows is the password, some of the above values are stored on the server in
@@ -114,11 +118,55 @@ authentication:
 * `hmac_key_ciphertext`
 * `container_name_hmac_key_iv`
 * `container_name_hmac_key_ciphertext`
-* `pubkey`
+* `pubkey` (only stored, not sent back to client after authentication, as it is
+  contained within `keypair_ciphertext`)
 * `keypair_key_salt`
 * `keypair_iv`
 * `keypair_ciphertext`
 * `symkey_ciphertext`
+* `challenge_key_salt` (sent to client first, to enable authentication)
+* `challenge_key` (not stored directly, but bcrypt'd)
+
+### Authentication
+
+In order to authenticate with the server, a client must prove that it knows the
+user's passphrase without transmitting the passphrase itself to the server.
+This is accomplished by storing a bcrypt hash of the output of a KDF against
+the passphrase (`challenge_key`).  To authenticate, the server will send the
+client `challenge_key_salt`, which it will use with the user's passphrase to
+re-calculate `challenge_key`.  The client will then send `challenge_key` to the
+server, which the server will then compare with its stored bcrypt hash.
+
+Upon successful authentication, the server will send the client the values
+listed above, and set a session token cookie to associate further requests with
+the authenticated session.
+
+### Containers
+
+Container data is (naturally) stored encrypted.  Containers are composed of
+records, which modify the state of a container in some way.  Each record is
+encrypted to a container session key, enabling the user to fully control access
+to container data.  Container session keys are stored on the server encrypted
+to one or more users' ECC public keys, including the owner's.  Sharing a
+container with another user amounts to encrypting the container session key to
+the recipient's public key.  The recipient can then use her own private key to
+decrypt the session key and read the contents of those records which were
+encrypted to that session key.  Thus, when a user shares a container with
+another user, all existing session keys for that container are encrypted to the
+recipient's public key.  "Unsharing" a container with one or more users
+requires generating a new container session key and encrypting it to only the
+users who should continue to have access to the container, but not the users
+who should no longer have access.
+
+### Messages
+
+Messages are encrypted using symmetric keys.  In order to send a message to
+another user, a Crypton client must send those keys along with the message,
+encrypted to the recipient's public key.  Message key generation, key
+encryption, key decryption, and key verification between peers may be cached by
+both sender and receiver.  In other words, the same set of keys may be memoized
+and used repeatedly for sending many messages, reducing the computation
+necessary.  Each message sent with the same keys MUST have unique IVs though.
 
 
 [json]: http://json.org

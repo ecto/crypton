@@ -46,13 +46,10 @@ _crypto_
     steps:
         save this object:
             {
-                hmac_key: 32 byte string, base64ed
-                salt_key: 32 byte string, base64ed
-                salt_challenge: 32 byte string, base64ed
+                keypair_key_salt: 32 byte string, base64ed
                 keypair_iv: 16 byte string, base64ed
                 keypair_serialized_ciphertext: many bytes, base64ed
                 pubkey_serialized: many bytes, base64ed
-                challenge_key: 32 byte string, base64ed
                 symkey_ciphertext: many bytes, base64ed
                 container_name_hmac_key_iv: 16 byte string, base64ed
                 container_name_hmac_key_ciphertext: 32 byte string, base64ed
