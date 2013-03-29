@@ -5,14 +5,12 @@ Framework.  It is intended for developers working on the Crypton framework
 itself, not users of the framework.  If you are interested in developing an
 application using Crypton, see [the client documentation][1].
 
-
 ## Getting Started
 
 If you are reading this, you probably already have a checkout of the code, but
 if not, you can clone the [repository from GitHub][2].  See the `README.md`
 file in the top-level directory of the repository, or the [Getting Started][3]
 section of [crypton.io][] for more details.
-
 
 ## Source Code Organization
 
