@@ -80,7 +80,23 @@ of information is released, it can never be revoked.)
 
 When an account is created, Crypton generates the following pieces of data:
 
+* `challenge_key_salt`: 32 random bytes, salt used by KDV when generating
+  `challenge_key`.
+* `challenge_key`: output of `KDF(challenge_key_salt, passphrase)`, used for
+  authentication.
 * `symkey`: 32 random bytes, used as symmetric key for encrypting other keys.
+* `symkey_key_salt`: 32 random bytes, salt used by KDF when generating
+  `symkey_key`.
+* `symkey_key`: output of `KDF(symkey_key_salt, passphrase)`, used to encrypt
+  `symkey`.  Never known by server.
+* `symkey_iv`: 16 random bytes, used with `symkey_key` to encrypt `symkey`.
+* `symkey_ciphertext`: many bytes, output of
+  `AES(symkey_key, symkey_iv).encrypt(symkey)`.
+* `keypair`: an ECC keypair object.
+* `pubkey`: the public component of `keypair`.
+* `keypair_iv`: 16 random bytes, used with `symkey` to encrypt `keypair`.
+* `keypair_ciphertext`: many bytes, output of
+  `AES(symkey, keypair_iv).encrypt(keypair)`.
 * `hmac_key`: 32 random bytes, HMAC key used for general data authentication.
 * `hmac_key_iv`: 16 random bytes, used with `symkey` to encrypt `hmac_key`.
 * `hmac_key_ciphertext`: 32 bytes, output of
@@ -91,41 +107,45 @@ When an account is created, Crypton generates the following pieces of data:
   `container_name_hmac_key`.
 * `container_name_hmac_key_ciphertext`: 32 bytes, output of
   `AES(symkey, container_name_hmac_key_iv).encrypt(container_name_hmac_key)`.
-* `keypair`: an ECC keypair object.
-* `pubkey`: the public component of `keypair`.
-* `keypair_key_salt`: 32 random bytes, salt used by KDF when generating
-  `keypair_key`.
-* `keypair_key`: output of `KDF(keypair_key_salt, passphrase)`, used to encrypt
-  `keypair`.  Never known by server.
-* `keypair_iv`: 16 random bytes, used with `keypair_key` to encrypt `keypair`.
-* `keypair_ciphertext`: many bytes, output of
-  `AES(keypair_key, keypair_iv).encrypt(keypair)`.
-* `symkey_ciphertext`: many bytes, output of `keypair.encrypt(symkey)`.
-* `challenge_key_salt`: 32 random bytes, salt used by KDV when generating
-  `challenge_key`.
-* `challenge_key`: output of `KDF(challenge_key_salt, passphrase)`, used for
-  authentication.
 
 In order to enable a client to retrieve and decrypt the various keys when all
 it knows is the password, some of the above values are stored on the server in
 their encrypted forms.  Once the client authenticates to the server, the server
 will send the encrypted values to the client, which can then compute the other
-values by re-generating `keypair_key` using the user's passphrase.  The
+values by re-generating `symkey_key` using the user's passphrase.  The
 following items are stored on the server and sent to the client after
 authentication:
 
+* `challenge_key_salt` (sent to client first, to enable authentication)
+* `challenge_key` (not stored directly, but bcrypt'd)
+* `symkey_key_salt`
+* `symkey_iv`
+* `symkey_ciphertext`
+* `keypair_iv`
+* `keypair_ciphertext`
+* `pubkey` (only stored, not sent back to client after authentication, as it is
+  contained within `keypair_ciphertext`)
 * `hmac_key_iv`
 * `hmac_key_ciphertext`
 * `container_name_hmac_key_iv`
 * `container_name_hmac_key_ciphertext`
-* `pubkey` (only stored, not sent back to client after authentication, as it is
-  contained within `keypair_ciphertext`)
-* `keypair_key_salt`
-* `keypair_iv`
-* `keypair_ciphertext`
-* `symkey_ciphertext`
-* `challenge_key_salt` (sent to client first, to enable authentication)
-* `challenge_key` (not stored directly, but bcrypt'd)
+
+To further illustrate, the crypto contexts and their corresponding keys are
+organized hierarchically as shown below:
+
+* passphrase
+  * `challenge_key` `KDF(challenge_key_salt, passphrase) => challenge_key`
+    * server stores `bcrypt(challenge_key, gensalt())`
+  * `symkey_key` `KDF(symkey_key_salt, passphrase) => symkey_key`
+    * `symkey`
+      `AES(symkey_key, symkey_iv).encrypt(symkey) => symkey_ciphertext`
+      * `keypair`
+        `AES(symkey, keypair_iv).encrypt(keypair) => keypair_ciphertext`
+      * `hmac_key`
+        `AES(symkey, hmac_key_iv).encrypt(hmac_key) => hmac_key_ciphertext`
+      * `container_name_hmac_key`
+        `AES(symkey, container_name_hmac_key_iv).encrypt(
+        container_name_hmac_key) => container_name_hmac_key_ciphertext`
 
 ### Authentication
 
