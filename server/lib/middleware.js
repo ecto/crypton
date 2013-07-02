@@ -19,7 +19,12 @@
 var middleware = module.exports = {};
 
 middleware.verifySession = function (req, res, next) {
+  // XXX review: non-standard header names should start with "X-". also, why
+  // are we using a non-standard header? cookies should suffice. this whole
+  // thing about CORS and so on is weird. we should talk about the motivations
+  // for this.
   var id = req.headers['session-identifier'];
+  // XXX review: do input validation on id here
 
   req.sessionStore.get(id, function (err, session) {
     if (err || !session || !session.accountId) {
