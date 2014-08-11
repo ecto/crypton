@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/vendor/bootstrap.min.css" />
+        <title>Crypton User Verifier</title>
+    </head>
+    <body>
+      <div id="app" class="app container-fluid">
+
+	<div id="header">
+	  <h3>	    
+	    <button id="tasks-btn" 
+		    type="button" class="btn btn-default btn-lg">
+	      <span class="glyphicon glyphicon-tasks"></span>
+	    </button>
+	    Crypton Messenger 
+	  </h3>
+	   <h4 id="account-name-label">
+	     Logged in as 
+	     <span class="label label-default" id="account-name"></span>
+	   </h4>
+	</div>
+
+	<ul id="top-menu" class="menu nav nav-stacked">
+	  <li class="active main-btn" id="my-messages">
+	    <a href="#">
+	      <span class="badge pull-right">0</span>
+	      Messages
+	    </a>
+
+	  </li>
+	  <li class="main-btn" id="my-fingerprint">
+	    <a href="#">
+	      My ID Card
+	    </a>
+	  </li>
+	  <li class="main-btn" id="verify-id-card">
+	    <a href="#">
+	      Verify an ID Card
+	    </a>
+	  </li>
+	  <li class="main-btn" id="my-contacts">
+	    <a href="#">
+	      My Contacts
+	    </a>
+	  </li>
+	  <li class="main-btn" id="find-users">
+	    <a href="#">
+	      Find a User
+	    </a>
+	  </li>
+	  <li class="main-btn" id="logout">
+	    <a href="#">
+	      Logout
+	    </a>
+	  </li>
+	</ul>
+
+	<div id="message-list" class="view">
+	  <ul class="nav nav-pills nav-stacked">
+	  </ul>
+	</div>
+
+	<div id="find-users-view" class="view">
+	  <div id="find-user-form" class="input-group input-group-lg">
+	    <input id="find-someone" 
+		   type="text"
+		   size="12"
+		   maxlength="32"
+		   type="text" class="form-control">
+	    <span class="input-group-btn btn-group-lg">
+	      <button id="find-someone-btn" 
+		      class="btn btn-default" 
+		      type="button">Find User</button>
+	    </span>
+	  </div>
+
+	</div>
+
+	<div id="account-login" class="view">
+	  <span class="status"></span>
+
+	  <div id="login-form" class="input-group input-group-lg">
+	    <input placeholder="Username"
+		   size="12"
+		   maxlength="32"
+		   class="form-control login-input" 
+		   id="username-login" type="text" />
+	    <input placeholder="Passphrase" 
+		   size="12"
+		   maxlength="32"
+		   class="form-control login-input"
+		   id="password-login" type="password" 
+		   autocomplete="off" />
+	  </div>
+
+	  <div id="login-buttons" class="btn-group btn-group-lg">
+	    <button class="btn btn-default" 
+		    id="register-btn">Create Account</button>
+	    <button class="btn btn-default"
+		    id="login-btn">Login</button>
+	  </div>
+
+	  <div id="login-progress" 
+	       class="progress progress-striped active">
+	    <div class="progress-bar"  role="progressbar" 
+		 aria-valuenow="100" aria-valuemin="0" 
+		 aria-valuemax="100" style="width: 100%">
+	    </div>
+	  </div>
+
+	</div>
+
+	<div id="scan-select" class="view">
+	  <div class="btn-group">
+	    <button type="button" 
+		    class="btn btn-default"
+		    id="scan">Scan QR Code</button> 
+	    <button type="button" 
+		    class="btn btn-default"
+		    id="get-image">Choose ID CARD Image</button>
+	  </div>
+	</div>
+
+	<div id="contacts" class="view">
+	  <ul id="contacts-list" class="nav nav-pills nav-stacked">
+	  </ul>
+	</div>
+
+	<div id="contact-details" class="view">
+	  
+	  <div id="contact-details-buttons" 
+	       class="btn-group btn-group-lg">
+	    <button type="button"
+		    class="btn btn-default"
+		    id="contacts-detail-message-btn">Message</button>
+	    <button type="button"
+		    class="btn btn-default"
+		    id="contacts-detail-dismiss-btn">Done</button>
+	  </div>
+	</div>
+
+	<div id="my-fingerprint-id" class="view">
+	</div>
+
+	<div id="peer-fingerprint-id" class="view">
+	</div>
+
+	<div id="compose-message" class="view">
+	  <div id="compose-form" class="input-group input-group-lg">
+	    <input placeholder="To"
+		   size="20"
+		   maxlength="64"
+		   class="form-control" 
+		   id="compose-recipient" type="text" 
+		   disabled="true"/>
+	    <input placeholder="Subject"
+		   size="20"
+		   maxlength="128"
+		   class="form-control" 
+		   id="compose-subject" type="text" />
+	    <textarea placeholder="Write message here" 
+		   maxlength="4096"
+		   class="form-control"
+		   id="compose-content"></textarea>
+	    <div class="btn-group btn-group-lg">
+	      <button type="button" 
+		      class="btn btn-default"
+		      id="compose-send-btn">Send</button> 
+	      <button type="button"
+		      class="btn btn-default"
+		      id="compose-cancel">Cancel</button>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="images" class="view">
+	  <img id="picture"/>
+	</div>
+
+      </div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/crypton.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
+	<!-- BEGIN QR Code Reader --> 
+	<script type="text/javascript" src="js/vendor/jsqrcode/grid.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/version.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/detector.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/formatinf.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/errorlevel.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/bitmat.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/datablock.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/bmparser.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/datamask.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/rsdecoder.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/gf256poly.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/gf256.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/decoder.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/qrcode.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/findpat.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/alignpat.js"></script>
+	<script type="text/javascript" src="js/vendor/jsqrcode/databr.js"></script>
+	<!-- END QR Code Reader --> 
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+    </body>
+</html>
