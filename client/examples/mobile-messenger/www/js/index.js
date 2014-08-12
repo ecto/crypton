@@ -213,15 +213,9 @@ var app = {
     function onSuccess (imageURI) {
       console.log(imageURI);
       // XXXddahl: should not have to add to the DOM here!
-      // var largeImage = document.getElementById('picture');
-      // largeImage.style.display = 'block';
-      // largeImage.src = "data:image/jpeg;base64," + imageURI;
-      // We need to return an image object
-      var img = $('<img />')[0];
+      // We should just return an image object
+      var img = $('#picture')[0];
       img.src = "data:image/jpeg;base64," + imageURI;
-      // img.height = "64";
-      // img.width = "48";
-      // return this photo to the callback
       callback(null, img);
     }
 
@@ -230,15 +224,15 @@ var app = {
       app.alert('An error occured: ' + message, 'danger');
     }
 
-    //Specify the source to get the photos.
+    // Specify the source to get the photos.
     navigator.camera.getPicture(onSuccess, onFail,
                                 { quality: 50,
                                   destinationType:
                                   Camera.DestinationType.DATA_URL,
                                   sourceType:
                                   navigator.camera.PictureSourceType.CAMERA,
-                                  targetheight: 64,
-                                  targetHeight: 48
+                                  targetheight: 200,
+                                  targetHeight: 200
                                 });
 
   },
@@ -458,35 +452,63 @@ var app = {
 
   // XXXddahl: We need to cache the user's ID Card with photo for the session
 
-  displayMyFingerprint: function (withPhoto) {
-    function displayIdCard(idCard) {
-      $(idCard).css({ width: '300px', 'margin-top': '1em'});
-      $('#my-fingerprint-id').append(idCard);
-
-      var idCardTitle = app.username + ' ' + app.APPNAME + ' ID Card';
-      var base64Img = canvas.toDataURL("image/png");
-      var html = '<button id="share-my-id-card" '
-               + 'class="btn btn-default">Share My ID Card</button>';
-
-      $('#my-fingerprint-id').append(html);
-
-      $('#share-my-id-card').click(function () {
-        window.plugins.socialsharing.share(null, idCardTitle, base64Img, null);
+  retakeIdPicture: function () {
+    // remove ID card
+    $('#my-fingerprint-id').children().remove();
+    // delete existing image
+    app.deleteIdPhoto(function (err) {
+      if (err) {
+        return app.alert('Cannot delete existing ID photo', 'danger');
+      }
+      // Re-create the ID card
+      var canvas =
+        app.card.createIdCard(app.fingerprint, app.username,
+                              app.APPNAME, app.URL);
+      app.addPhotoToIdCard(canvas , function (err, idCard) {
+        if (err) {
+          return app.alert(err, 'danger');
+        }
+        app.displayIdCard(idCard);
       });
-    }
+    }, true);
+  },
+
+  displayIdCard: function (idCard) {
+    $(idCard).css({ width: '300px', 'margin-top': '1em'});
+    $('#my-fingerprint-id').append(idCard);
+    var idCardTitle = app.username + ' ' + app.APPNAME + ' ID Card';
+    var base64Img = idCard.toDataURL("image/png");
+    var html = '<button id="share-my-id-card" '
+             + 'class="btn btn-default">Share My ID Card</button>'
+             + '<button id="retake-id-picture" '
+             + 'class="btn btn-default">Retake ID Picture</button>';
+    // XXXddahl: add a 'remove ID picture' button
+
+    $('#my-fingerprint-id').append(html);
+
+    $('#share-my-id-card').click(function () {
+      window.plugins.socialsharing.share(null, idCardTitle, base64Img, null);
+    });
+
+    $('#retake-id-picture').click(function () {
+      app.retakeIdPicture();
+    });
+  },
+
+  displayMyFingerprint: function (withPhoto) {
 
     $('#my-fingerprint-id').children().remove();
     var canvas =
       app.card.createIdCard(app.fingerprint, app.username,
                              app.APPNAME, app.URL);
     if (withPhoto) {
-      app.addPhotoToIdCard(canvas, function (err, idCard) {
+      app.addPhotoToIdCard(canvas , function (err, idCard) {
         console.log('addPhotoToIdCard callback');
         console.log(idCard);
         if (err) {
           return app.alert(err, 'danger');
         }
-        displayIdCard(idCard);
+        app.displayIdCard(idCard);
       });
     }
   },
@@ -572,16 +594,25 @@ var app = {
     return canvas;
   },
 
-  debugger: {
-    deletePhoto: function () {
-      app.session.deleteContainer(app.PHOTO_CONTAINER,
-        function (err) {
-          if (err){
-            app.alert(err, 'danger');
-          } else {
-            app.alert('deleted', 'info'); }
-        });
-    }
+
+  deleteIdPhoto: function (callback, quietly) {
+    app.session.deleteContainer(app.PHOTO_CONTAINER,
+      function (err) {
+        if (err){
+          return app.alert(err, 'danger');
+        }
+        for (var i = 0; i < app.session.containers.length; i++) {
+          if (app.session.containers[i].name == app.PHOTO_CONTAINER) {
+            app.session.containers.splice(i, 1);
+          }
+        }
+        if (!quietly) {
+          app.alert('deleted', 'info');
+        }
+        if (callback) {
+          callback();
+        }
+      });
   },
 
   loadOrCreateContainer: function (containerName, callback) {
