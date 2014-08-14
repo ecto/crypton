@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.crypton.mobile-verify" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>MobileVerify</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
-    </author>
-    <content src="index.html" />
-    <access origin="*" />
+<widget id="io.crypton.mobile-messenger" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>Crypton Mobile Messenger</name>
+  <description>
+    A messaging application built on Crypton
+  </description>
+  <author email="ddahl@nulltxt.se" href="http://crypton.io">
+    Crypton Team, SpiderOak, Inc.
+  </author>
+  <content src="index.html" />
+  <access origin="*" />
+  <icon src="www/img/logo.png" /> 
 </widget>

@@ -168,3 +168,7 @@ h1 {
 #compose-message {
     height: 8em;
 }
+
+.full-message {
+    display: none;
+}

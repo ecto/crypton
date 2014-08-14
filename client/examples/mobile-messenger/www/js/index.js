@@ -28,6 +28,8 @@ var app = {
     this.bindEvents();
   },
 
+  MESSAGE_TYPE: 'messengerMessage',
+
   APPNAME: 'CryptonMessenger',
 
   URL: 'https://crypton.io',
@@ -703,78 +705,44 @@ var app = {
 
   handleMessage: function (message) {
     console.log('handleMessage()');
-    if (message.headers.action == 'containerShare') {
-      // make sure the sender is in our whitelist
-      var from = message.payload.fromUsername;
-      console.log(from);
-      app.getContactsFromServer(function (err, contacts) {
-        // this checks for a cached container
-        // XXXddahl: need to refresh from server every X minutes...
-        console.log(contacts);
-        if (err) {
-          console.error(err);
-          return app.alert(err, 'danger');
-        }
-        if (contacts[from]) {
-          console.log(contacts[from]);
-          // we have a verified, trusted user here
-          // load the peer object...
-          app.session.getPeer(from, function (err, peer) {
-            if (err) {
-              return app.alert('Cannot load peer from server', 'danger');
-            }
-            // let's load the new container!
-            var hmac = message.payload.containerNameHmac;
-            console.log(hmac);
-            app.session.loadWithHmac(hmac, peer,
-              function (err, msgContainer) {
-                if (err) {
-                  return app.alert('Cannot load message container', 'danger');
-                }
-                console.log(msgContainer);
-                // save to archived message conatiner...
-                app.session.load('archived_messages',
-                function (err, archContainer) {
-                  if (err) {
-                    return app.alert('Cannot load archived messages');
-                  }
-                  console.log(archContainer);
-                  if (!archContainer.keys['archived_messages']) {
-                    archContainer.keys['archived_messages'] = {};
-                  }
-                  var msg = {
-                    from: from,
-                    to: msgContainer.keys['recipient'],
-                    content: msgContainer.keys['content'],
-                    subject: msgContainer.keys['subject'],
-                    sent: msgContainer.keys['sent'],
-                    hmac: hmac
-                  };
-                  archContainer.keys['archived_messages'][hmac] = msg;
-                  // list message
-                  console.log('listing message');
-                  console.log(msg);
-                  app.listMessage(msg);
-                  console.log('notifying of new message');
-                  app.notifyMessageArrival(msg);
-                });
-              });
-          });
-        } else {
-          // Message was sent by a contact we don't know about or trust
-          console.error('Container shared by untrusted peer, ignoring.');
-          // XXXddahl: delete the message!
-        }
-      });
+    if (message.headers.type != app.MESSAGE_TYPE) {
+      return;
     }
+    // msg = {from, to, subject, content}
+    var plaintextMessage = {
+      from: message.headers.fromUsername,
+      to: message.headers.toUsername,
+      subject: message.payload.subject,
+      content: message.payload.content,
+      sent: message.payload.sent
+    };
+
+    app.listMessage(plaintextMessage);
+  },
+
+  sendProgress: function(isFinished) {
+    // TODO
   },
 
   listMessage: function (message) {
     // Add this message to the message list
-    var html = '<li>'
+    var html = '<li><span class="msg-from">'
+               + message.from
+               + '</span>'
+               + '<div class="msg-subject">'
                + message.subject
+             + '</div>'
+             + '<div class="full-message">'
+             + JSON.stringify(message)
+             + '</div>'
              + '</li>';
-    $('#message-list').prepend($(html));
+    var msg = $(html);
+    $('#message-list').prepend(msg);
+    msg.click(function () {
+      // XXXddahl halfbaked!
+      var fullMsg = JSON.parse($(this).text());
+      alert(fullMsg.content);
+    });
     app.notifyMessageArrival(message);
   },
 
@@ -827,68 +795,38 @@ var app = {
   sendMessage: function (message, callback) {
     console.log('sendMessage()');
     console.log(message);
-    // create a new container and share it with message.recipient peer
-    if (!message.content) {
-      return app.alert('Message content required!');
-    }
-    if (!message.recipient) {
-      return app.alert('Message recipient required!');
-    }
+    app.session.getPeer(message.recipient, function(err, peer) {
+      console.log('getting peer callback');
+      if (err) {
+        console.error(err);
+        return app.alert(err, 'danger');
+      }
+      // We have a peer
+      if (!peer.trusted) {
+        console.error('peer is not trusted');
+        return app.alert('Cannot send a message to untrusted peer', 'danger');
+      }
+      // Send it
+      var payload = {
+        subject: message.subject,
+        content: message.content,
+        sent: message.sent
+      };
 
-    // create a new conatainer for the new message
-    app.loadOrCreateContainer('message_index',
-      function (err, rawContainer) {
-        console.log('loading message index...');
+      var headers = {
+        type: app.MESSAGE_TYPE
+      };
+
+      app.sendProgress();
+      peer.sendMessage(headers, payload, function (err, messageId) {
         if (err) {
-          console.error('message index failed to load...');
+          app.alert('Message send failed', 'danger');
           return callback(err);
         }
-        app.message_index = rawContainer; // store message metadata here
-        // Get peer
-        console.log('getting peer...');
-        app.session.getPeer(message.recipient, function(err, peer) {
-          console.log('getting peer callback');
-          if (err) {
-            console.error(err);
-             return app.alert(err, 'danger');
-          }
-          // We have a peer
-          if (!peer.trusted) {
-            console.error('peer is not trusted');
-            return app.alert('Cannot send a message to untrusted peer', 'danger');
-          }
-          // create a message container
-          var now = Date.now();
-          var msgContainerName = peer.username + '-' + now;
-          console.log('load or create msg container');
-          app.loadOrCreateContainer(msgContainerName,
-            function (err, msgContainer) {
-              if (err) {
-                console.error(err);
-                return app.alert(err, 'danger');
-              }
-              console.log('Message Container...');
-              console.log(msgContainer);
-              var msg = msgContainer;
-              message.created = now;
-              msg.keys.message = message;
-              // let's share this container!
-              console.log('sharing message!');
-              msg.share(peer, function (err) {
-                if (err) {
-                  console.error(err);
-                  return app.alert(err, 'danger');
-                }
-                console.log('shared message container...');
-                console.log(msg);
-                // We have shared the message container
-                // keep a record in the index
-                app.message_index.keys[msgContainerName] = message;
-                app.cleanupNewMessage(true);
-              });
-            });
-        });
+        app.sendProgress(true);
+        callback(null, messageId);
       });
+    });
   },
 
   showComposeUI: function (recipient) {
@@ -908,15 +846,3 @@ var app = {
     $('.main-btn').show();
   }
 };
-
-// XXXddahl:
-// Thoughts on messaging:
-// each message is a unique container.
-// Create container, assign recipient(s), share container
-// Listen for 'containershared' event, use 'notify' api to tell user
-//   of new message(s)
-// Message consists of subject and a 4K block of
-//   text (pre-encryption) + 1 file up to 500K ??
-// Login function needs to call 'check Inbox()'
-//   shorlty after logging in.
-// We must page the inbox
