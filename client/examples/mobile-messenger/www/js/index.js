@@ -127,7 +127,12 @@ var app = {
 
     $('#compose-send-btn').click(function () {
       console.log('send!!');
+    });
 
+    $('#my-messages').click(function () {
+      hideMainButtons('my-messages');
+      $('.view').hide();
+      $('#messages').show();
     });
 
     $('#find-someone').keyup(
@@ -705,6 +710,11 @@ var app = {
 
   handleMessage: function (message) {
     console.log('handleMessage()');
+    console.log(message);
+    if (!message) {
+      console.warn('message is undefined');
+      return;
+    }
     if (message.headers.type != app.MESSAGE_TYPE) {
       return;
     }
@@ -726,6 +736,8 @@ var app = {
 
   listMessage: function (message) {
     // Add this message to the message list
+    console.log('listMessage...');
+    console.log(message);
     var html = '<li><span class="msg-from">'
                + message.from
                + '</span>'
