@@ -1,20 +1,5 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * TODO LICENSE
  */
 
 var app = {
@@ -135,6 +120,16 @@ var app = {
       $('#messages').show();
     });
 
+    $('#create-id-card').click(function () {
+      app.firstRunCreateIdCard( function () {
+        $('.view').hide();
+        app.revealMenu();
+        hideMainButtons('my-fingerprint');
+        $('#my-fingerprint-id').show();
+        app.firstRunComplete();
+      });
+    });;
+
     $('#find-someone').keyup(
       function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -195,8 +190,8 @@ var app = {
     $('.view').hide();
     $('.main-btn').hide();
     $('#tasks-btn').hide();
-    $('#account-name-label').hide();
-    $('#account-name').html("");
+    // $('#account-name-label').hide();
+    // $('#account-name').html("");
     $('#account-login').show();
     $('#login-buttons').show();
     $('#password-login').val("");
@@ -290,8 +285,8 @@ var app = {
       }
       $('.view').hide();
       $('#scan-select').show();
-      $('#account-name-label').show();
-      $('#account-name').text(user);
+      // $('#account-name-label').show();
+      // $('#account-name').text(user);
       $('#login-progress').hide();
     }
 
@@ -325,18 +320,21 @@ var app = {
         app.alert(err, 'danger');
         $('#login-progress').hide();
         $('#login-buttons').show();
+        app.clearLoginStatus();
         return;
       }
       $('.view').hide();
-      $('#tasks-btn').show();
-      $('#account-name').text(user);
-      $('#account-name-label').show();
+      // $('#account-name').text(user);
       app.username = user;
-      $("#top-menu").show();
-      $(".main-btn").show();
       app.session = session;
       $('#login-progress').hide();
       $('#login-buttons').show();
+      // Check for first run
+      if (!localStorage.getItem('firstRun')) {
+        app.firstRun();
+      } else {
+        app.revealMenu();
+      }
     }
 
     crypton.authorize(user, pass, function (err, session) {
@@ -345,6 +343,30 @@ var app = {
       }
       return callback(null, session);
     });
+  },
+
+  firstRun: function () {
+    // prompt to create Id card & why
+    $('.view').hide();
+    $('#first-run').show();
+  },
+
+  firstRunComplete: function () {
+    localStorage.setItem('first-run', Date.now());
+  },
+
+  revealMenu: function () {
+    $('#tasks-btn').show();
+    // $('#account-name-label').show();
+    $("#top-menu").show();
+    $(".main-btn").show();
+  },
+
+  hideMenu: function () {
+    $('#tasks-btn').hide();
+    // $('#account-name-label').hide();
+    $("#top-menu").hide();
+    $(".main-btn").hide();
   },
 
   disableLoginButtons: function () {
@@ -356,7 +378,11 @@ var app = {
   },
 
   setLoginStatus: function (m) {
-    $('#account-login .status').text(m);
+    $('#login-status .status').text(m);
+  },
+
+  clearLoginStatus: function (m) {
+    $('#login-status .status').text('');
   },
 
   formatFingerprint: function (fingerprint) {
@@ -457,13 +483,20 @@ var app = {
 
   // XXXddahl: We need to cache the user's ID Card with photo for the session
 
-  retakeIdPicture: function () {
+  firstRunCreateIdCard: function (callback) {
+    // XXXddahl: this is a hack for now
+    app.retakeIdPicture(true, callback);
+  },
+
+  retakeIdPicture: function (firstRun, callback) {
     // remove ID card
     $('#my-fingerprint-id').children().remove();
     // delete existing image
     app.deleteIdPhoto(function (err) {
       if (err) {
-        return app.alert('Cannot delete existing ID photo', 'danger');
+        if (!firstRun) {
+          return app.alert('Cannot delete existing ID photo', 'danger');
+        }
       }
       // Re-create the ID card
       var canvas =
@@ -473,12 +506,12 @@ var app = {
         if (err) {
           return app.alert(err, 'danger');
         }
-        app.displayIdCard(idCard);
+        app.displayIdCard(idCard, callback);
       });
     }, true);
   },
 
-  displayIdCard: function (idCard) {
+  displayIdCard: function (idCard, callback) {
     $(idCard).css({ width: '300px', 'margin-top': '1em'});
     $('#my-fingerprint-id').append(idCard);
     var idCardTitle = app.username + ' ' + app.APPNAME + ' ID Card';
@@ -498,6 +531,9 @@ var app = {
     $('#retake-id-picture').click(function () {
       app.retakeIdPicture();
     });
+    if (callback) {
+      callback();
+    }
   },
 
   displayMyFingerprint: function (withPhoto) {

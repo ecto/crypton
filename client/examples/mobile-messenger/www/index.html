@@ -1,21 +1,6 @@
 <!DOCTYPE html>
 <!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
+    // TODO: LICENSE
 -->
 <html>
     <head>
@@ -24,33 +9,32 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
+	<link rel="stylesheet" type="text/css" href="css/vendor/font-awesome.css" />
         <link rel="stylesheet" type="text/css" href="css/vendor/bootstrap.min.css" />
-        <title>Crypton Messenger</title>
+        <title>Messenger</title>
     </head>
     <body>
+      <div id="header">
+	<h3 class="header-title">
+	  <a href="#" id="tasks-btn">
+            <i class="fa fa-home"></i>
+	  </a>
+	  <span id="app-name">Messenger</span>
+	</h3>
+      </div>
+
       <div id="app" class="app container-fluid">
-
-	<div id="header">
-	  <h4>	    
-	    <button id="tasks-btn" 
-		    type="button" class="btn btn-default btn-lg">
-	      <span class="glyphicon glyphicon-tasks"></span>
-	    </button>
-	    Crypton Messenger
-	  </h4>
-	   <h4 id="account-name-label">
-	     Logged in as 
-	     <span class="label label-default" id="account-name"></span>
-	   </h4>
-	</div>
-
 	<ul id="top-menu" class="menu nav nav-stacked">
 	  <li class="active main-btn" id="my-messages">
 	    <a href="#">
-	      <span class="badge pull-right">0</span>
-	      Messages
+	      <span id="num-messages" class="badge pull-right">0</span>
+	      <i class="fa fa-envelope"></i><span>Messages</span> Messages
 	    </a>
-
+	  </li>
+	  <li class="main-btn" id="my-contacts">
+	    <a href="#">
+	      My Contacts
+	    </a>
 	  </li>
 	  <li class="main-btn" id="my-fingerprint">
 	    <a href="#">
@@ -60,16 +44,6 @@
 	  <li class="main-btn" id="verify-id-card">
 	    <a href="#">
 	      Verify an ID Card
-	    </a>
-	  </li>
-	  <li class="main-btn" id="my-contacts">
-	    <a href="#">
-	      My Contacts
-	    </a>
-	  </li>
-	  <li class="main-btn" id="find-users">
-	    <a href="#">
-	      Find a User
 	    </a>
 	  </li>
 	  <li class="main-btn" id="logout">
@@ -101,8 +75,6 @@
 	</div>
 
 	<div id="account-login" class="view">
-	  <span class="status"></span>
-
 	  <div id="login-form" class="input-group input-group-lg">
 	    <input placeholder="Username"
 		   size="12"
@@ -116,7 +88,9 @@
 		   id="password-login" type="password" 
 		   autocomplete="off" />
 	  </div>
-
+	  <div id="login-status">
+	    <span class="status"></span>
+	  </div>
 	  <div id="login-buttons" class="btn-group btn-group-lg">
 	    <button class="btn btn-default" 
 		    id="register-btn">Create Account</button>
@@ -195,6 +169,21 @@
 		      id="compose-cancel">Cancel</button>
 	    </div>
 	  </div>
+	</div>
+
+	<div id="first-run" class="view">
+	  <h3>Initial Setup</h3>
+	  <h3>Now that you have an account...</h3>
+	  <p>
+	    You need to create an application <i>'ID Card'</i>, which identifies you to other users of this application you would like to communicate with.
+	  </p>
+	  <p>
+	    Once you share this <i>'ID Card'</i> with another user, and you have received thiers, you can privately communicate with them.
+	  </p>
+	  <p>
+	    <button class="btn btn-default" 
+		    id="create-id-card">Create ID Card</button>
+	  </p>
 	</div>
 
 	<div id="images" class="view">
