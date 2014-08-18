@@ -2246,7 +2246,7 @@ Inbox.prototype.parseRawMessages = function () {
   var that = this;
 
 
-for (var i = 0; i < this.rawMessages.length; i++) {
+  for (var i = 0; i < this.rawMessages.length; i++) {
     var rawMessage = this.rawMessages[i];
 
     if (this.messages[rawMessage.messageId]) {

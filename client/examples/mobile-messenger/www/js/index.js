@@ -335,8 +335,6 @@ var app = {
       $("#top-menu").show();
       $(".main-btn").show();
       app.session = session;
-      // start message listener
-      app.inboxListener();
       $('#login-progress').hide();
       $('#login-buttons').show();
     }
@@ -700,11 +698,101 @@ var app = {
     });
   },
 
-  inboxListener: function () {
-    app.session.on('message', function (message) {
-      console.log('message arrived');
-      console.log(message);
-      app.handleMessage(message);
+  messageIdQueue: [],
+
+  messages: {},
+
+  fillMessageQueue: function (callback) {
+    console.log('checkMessages');
+    app.session.inbox.poll(function (err, messages) {
+      if (err) {
+        console.error(err);
+        return callback(err);
+      }
+      console.log(messages);
+      return callback(null, messages);
+    });
+  },
+
+  getMessages: function (qty) {
+    if (!qty) {
+      qty = 5;
+    }
+    app.fillMessageQueue(function (err, messageIds) {
+      if (err) {
+        return app.alert(err, 'danger');
+      }
+
+      console.log('numberOfMessages: ', messageIds.length);
+      if (messageIds.length < 1) {
+        return app.alert('No new messages', 'info');
+      }
+      var numMessagesToGet;
+      if (messageIds.length <= qty) {
+        numMessagesToGet = messageIds.length;
+      } else {
+        numMessagesToGet = qty;
+      }
+      var newMessageIds = messageIds;
+      var j = 0;
+      app.session.inbox.messages = {}; // kill the cache!
+      for (var i = 0; i < messageIds.length; i++) {
+        // get the message, save in messages, remove from msg_id array
+        var msgId = messageIds[i].messageId;
+        // console.log(Object.keys(messageIds));
+        console.log(msgId);
+        if (!msgId) {
+          console.log('Skipping');
+          continue; // XXXddahl: fix this in server code!!!
+        }
+        console.log('inbox.get()', msgId);
+        app.session.inbox.get(msgId, function (err, message) {
+
+          console.log('message.........');
+          console.log(message);
+          if (err) {
+            // app.messageIdQueue.splice(j, 1);
+            j++;
+            return console.error(err);
+          }
+          if (!app.messages[msgId]) {
+            app.messages[msgId] = message;
+            newMessageIds.push(msgId);
+            // app.messageIds.splice(j, 1);
+            j++;
+            return; // console.log(message);
+          }
+          j++;
+          console.log('j', j);
+          if (j == numMessagesToGet) {
+            // decrypt and display messages
+            for (var i = 0; i < numMessagesToGet; i++) {
+              var idx = newMessageIds[i];
+              app.session.getPeer(message.fromUsername, function (err, peer) {
+                if (err) {
+                  return console.error(err);
+                }
+                console.log('decrypt.........');
+                message.decrypt(function (err, decryptedMsg) {
+                  if (err) {
+                    return console.error(err);
+                  }
+                  var plaintextMessage = {
+                    from: message.   fromUsername,
+                    to: decryptedMsg.headers.toUsername,
+                    subject: decryptedMsg.payload.subject,
+                    content: decryptedMsg.payload.content,
+                    sent: decryptedMsg.payload.sent
+                  };
+                  console.log(plaintextMessage);
+                  app.listMessage(plaintextMessage);
+                  // delete app.messages[idx];
+                });
+              });
+            }
+          }
+        });
+      }
     });
   },
 
