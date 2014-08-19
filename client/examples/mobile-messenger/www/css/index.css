@@ -41,7 +41,6 @@ body {
     height:100%;
     margin:0px;
     padding:0px;
-    text-transform:uppercase;
     width:100%;
 }
 
@@ -145,7 +144,7 @@ h1 {
 }
 
 #app-name {
-    padding-left: 0.3em;
+    padding-left: 1em;
 }
 
 #header {
@@ -175,9 +174,9 @@ h1 {
 
 #tasks-btn {
     display: none;
-    margin-right: 1em;
     color: inherit;
     padding-left: 0.5em;
+    text-decoration: none;
 }
 
 #account-name-label {
@@ -202,8 +201,9 @@ h1 {
 }
 
 #contacts-list li {
-    font-size: 1.5em;
+    font-size: 1.7em;
     border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
 }
 
 #compose-message {

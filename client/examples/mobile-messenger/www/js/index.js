@@ -19,6 +19,8 @@ var app = {
 
   URL: 'https://crypton.io',
 
+  VERSION: "0.1",
+
   get username() { return app.session.account.username },
 
   get fingerprint() { return app.session.account.fingerprint },
@@ -28,12 +30,11 @@ var app = {
   // 'load', 'deviceready', 'offline', and 'online'.
   bindEvents: function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
-
     var mainBtnIds = ['my-messages', 'my-fingerprint',
                       'verify-id-card', 'my-contacts',
                       'find-users', 'logout'];
 
-    function hideMainButtons(exceptBtn) {
+    var hideMainButtons = app.hideMainButtons = function hideMainButtons(exceptBtn) {
       if (!exceptBtn) {
         console.error('exceptBtn is required');
         return;
@@ -47,7 +48,7 @@ var app = {
           }
         }
       }
-    }
+    };
 
     $('#scan').click(function () {
       app.scanQRCode();
@@ -330,11 +331,18 @@ var app = {
       $('#login-progress').hide();
       $('#login-buttons').show();
       // Check for first run
-      if (!localStorage.getItem('firstRun')) {
-        app.firstRun();
-      } else {
+      app.loadOrCreateContainer('_prefs_', function(err, rawContainer) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        var prefs = rawContainer.keys;
+        if (!prefs['first-run']) {
+          app.firstRun();
+          return;
+        }
         app.revealMenu();
-      }
+      });
     }
 
     crypton.authorize(user, pass, function (err, session) {
@@ -352,10 +360,21 @@ var app = {
   },
 
   firstRunComplete: function () {
-    localStorage.setItem('first-run', Date.now());
+    app.loadOrCreateContainer('_prefs_',
+    function (err, rawContainer) {
+      if (err) {
+        console.error('Cannot load prefs conatiner, firstRunComplete failed');
+        return;
+      }
+      var prefs = rawContainer;
+      prefs.keys['first-run'] = Date.now();
+      prefs.save();
+    });
   },
 
   revealMenu: function () {
+    $('#app-name').css({'padding-left': 0, 'margin-right': 0 });
+
     $('#tasks-btn').show();
     // $('#account-name-label').show();
     $("#top-menu").show();
@@ -390,45 +409,111 @@ var app = {
   },
 
   verifyUser: function (username, fingerprint) {
+    var rawFingerprintArr = fingerprint.split(' ');
+    var rawFingerprint = rawFingerprintArr.join('').toLowerCase();
+    // XXXddahl: the above ^^ is a hack to make this work for now
+    $('#verify-user-success-msg').children().remove();
+    $('#verify-user-failure-msg').children().remove();
+    $('#verify-trust-failure-ok').hide();
+    app.hideMainButtons('verify-user');
+    $('#verify-user').show();
+
     app.session.getPeer(username, function(err, peer) {
       if (err) {
         app.alert(err, 'danger');
         return;
       }
 
-      var peerFingerprint = app.formatFingerprint(peer.fingerprint);
+      function success () {
+        peer.trust(function (err) {
+          if (err) {
+            console.log('peer trust failed: ' + err);
+          } else {
+            app.alert('Peer ' + username + ' is now a trusted contact!',
+                      'success');
+            $('#verify-user-success-msg').children().remove();
+            // TODO: remove click events from buttons
+            app.hideMainButtons('verify-id-card');
+            $('.view').hide();
+            $('#scan-select').show();
+          }
+        });
+      }
 
-      if (peerFingerprint == fingerprint) {
-        var conf = 'The server supplied fingerprint for '
-                 + username
-                 + ' is: \n'
-                 + peerFingerprint
-                 + '\nThe fingerprint from the ID card is :\n'
-                 + fingerprint
-                 + '\nIt is a MATCH, click OK to verify '
-                 + username
-                 + ' as a trusted contact.'
+      function cancelTrust () {
+        $('#verify-user-success-msg').children().remove();
+        $('#verify-user-failure-msg').children().remove();
+        // TODO: remove click events from buttons
+        app.hideMainButtons('verify-id-card');
+        $('.view').hide();
+        $('#scan-select').show();
+      }
 
-        if (window.confirm(conf)) {
-          peer.trust(function (err) {
-            if (err) {
-              console.log('peer trust failed: ' + err);
-            } else {
-              app.alert('Peer ' + username + ' is now a trusted contact!',
-                        'success');
-            }
-          });
-        }
+      var outOfBandFingerprint = rawFingerprint;
+      var outOfBandFingerprintArr =
+        app.card.createFingerprintArr(outOfBandFingerprint);
+      var colorArr = app.card.createColorArr(outOfBandFingerprintArr);
+      var outOfBandIdGrid = app.card.createIdentigrid(colorArr, 120, 120);
+
+      var peerFingerprintArr = app.card.createFingerprintArr(peer.fingerprint);
+      var peerColorArr = app.card.createColorArr(peerFingerprintArr);
+      var peerIdGrid = app.card.createIdentigrid(peerColorArr, 120, 120);
+
+      if (peer.fingerprint == outOfBandFingerprint) {
+        var conf = '<p>The <strong>server supplied</strong> '
+                 + 'ID color grid for <strong>'
+                 + username
+                 + '</strong> is: </p>'
+                 + '<p id="server-idgrid-canvas"></p>'
+                 + '<p><strong>'
+                 + username
+                 + '\'s scanned/selected</strong> ID color grid '
+                 + 'is :</p>'
+                 + '<p id="outofband-idgrid-canvas"></p>'
+                 + '<p>It is a MATCH, click \'Trust and Save\' to add <strong>'
+                 + username
+                 + ' </strong> to your trusted contacts.</p>'
+        var msg = $(conf);
+        $('#verify-user-success-msg').append(msg);
+        // add canvases to DOM
+        $('#server-idgrid-canvas').append(peerIdGrid);
+
+        $('#outofband-idgrid-canvas').append(outOfBandIdGrid);
+
+        $('#verify-trust-save').click(function () {
+          success();
+        });
+
+        $('#verify-trust-cancel').click(function () {
+          cancelTrust();
+        });
+        $('#verify-trust-save').show();
+        $('#verify-trust-cancel').show();
       } else {
-        app.alert('The server supplied fingerprint for '
+        $('#verify-trust-failure-ok').show();
+        $('#verify-trust-save').hide();
+        $('#verify-trust-cancel').hide();
+
+        var conf = '<p>The server supplied</strong> '
+                 + 'ID color grid for <strong>'
              + username
-             + ' is: <br />'
-             + peerFingerprint
-             + '<br />The fingerprint from the ID card is :<br />'
-             + fingerprint
-             + '<br />It is NOT A MATCH<br />'
+             + '</strong> is: <p/>'
+             + '<p id="server-idgrid-canvas"></p>'
+             + '<p>The <strong>scanned</strong> ID card is :</p>'
+             + '<p id="outofband-idgrid-canvas"></p>'
+             + '<p>It is NOT A MATCH</p> <strong>'
              + username
-             + ' *Cannot* be a trusted contact.');
+             + ' </strong>*Cannot* be a trusted contact.';
+
+        var msg = $(conf);
+        $('#verify-user-failure-msg').append(msg);
+        // add canvases to DOM
+        $('#server-idgrid-canvas').append(peerIdGrid);
+        $('#outofband-idgrid-canvas').append(outOfBandIdGrid);
+
+        $('#verify-trust-failure-ok').click(function () {
+          cancelTrust();
+        });
       }
     });
   },
@@ -681,35 +766,28 @@ var app = {
       app._contacts = contacts;
       $('#contacts-list').children().remove();
       for (var name in contacts) {
-        var html = '<li id="contact-'
+        var html = '<li class="contact-record" id="contact-'
                    + name
                    + '">'
                    + name
                    + '</li>';
         $('#contacts-list').append($(html));
-        // var _btn = '<button id="compose-"' + name + '-btn">Send</button>';
-        // var btn = $('#contacts-' + name).prepend($(_btn));
-
-        var id = '#contact-' + name; // XXXddahl: need an inner node for click event
-        $(id).click(function () {
-          app.contactDetails(name);
-          // set the message button event handler inside this one...
-          $('#contacts-detail-message-btn').click(function () {
-            app.showComposeUI(name);
-          });
-        });
-
-        // var composeId = '#compose-' + name + '-btn';
-        // console.log($(composeId));
-        // $(composeId).click(function () {
-        //   app.showComposeUI(name);
-        // });
       }
+
+      $('.contact-record').click(function () {
+        var contact = $(this).text();
+        console.log(contact);
+        app.contactDetails(contact);
+        // set the message button event handler inside this one...
+        $('#contacts-detail-message-btn').click(function () {
+          app.showComposeUI(contact);
+        });
+      });
+
     });
   },
 
   contactDetails: function (name) {
-    $('.contact-id').remove();
     var contact = app._contacts[name];
     // display the contact's fingerprint ID card:
     var canvas = app.card.createIdCard(contact.fingerprint,
