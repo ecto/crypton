@@ -174,9 +174,9 @@ h1 {
 
 #tasks-btn {
     display: none;
-    margin-right: 1em;
     color: inherit;
     padding-left: 0.5em;
+    text-decoration: none;
 }
 
 #account-name-label {

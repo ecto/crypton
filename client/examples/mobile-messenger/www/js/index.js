@@ -373,7 +373,8 @@ var app = {
   },
 
   revealMenu: function () {
-    $('#app-name').css({'padding-left': 0});
+    $('#app-name').css({'padding-left': 0, 'margin-right': 0 });
+
     $('#tasks-btn').show();
     // $('#account-name-label').show();
     $("#top-menu").show();
