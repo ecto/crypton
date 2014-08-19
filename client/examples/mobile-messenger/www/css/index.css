@@ -144,7 +144,7 @@ h1 {
 }
 
 #app-name {
-    padding-left: 0.3em;
+    padding-left: 1em;
 }
 
 #header {
@@ -201,8 +201,9 @@ h1 {
 }
 
 #contacts-list li {
-    font-size: 1.5em;
+    font-size: 1.7em;
     border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
 }
 
 #compose-message {

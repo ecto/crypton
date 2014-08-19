@@ -19,6 +19,8 @@ var app = {
 
   URL: 'https://crypton.io',
 
+  VERSION: "0.1",
+
   get username() { return app.session.account.username },
 
   get fingerprint() { return app.session.account.fingerprint },
@@ -28,7 +30,6 @@ var app = {
   // 'load', 'deviceready', 'offline', and 'online'.
   bindEvents: function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
-
     var mainBtnIds = ['my-messages', 'my-fingerprint',
                       'verify-id-card', 'my-contacts',
                       'find-users', 'logout'];
@@ -330,11 +331,18 @@ var app = {
       $('#login-progress').hide();
       $('#login-buttons').show();
       // Check for first run
-      if (!localStorage.getItem('firstRun')) {
-        app.firstRun();
-      } else {
+      app.loadOrCreateContainer('_prefs_', function(err, rawContainer) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        var prefs = rawContainer.keys;
+        if (!prefs['first-run']) {
+          app.firstRun();
+          return;
+        }
         app.revealMenu();
-      }
+      });
     }
 
     crypton.authorize(user, pass, function (err, session) {
@@ -352,10 +360,20 @@ var app = {
   },
 
   firstRunComplete: function () {
-    localStorage.setItem('first-run', Date.now());
+    app.loadOrCreateContainer('_prefs_',
+    function (err, rawContainer) {
+      if (err) {
+        console.error('Cannot load prefs conatiner, firstRunComplete failed');
+        return;
+      }
+      var prefs = rawContainer;
+      prefs.keys['first-run'] = Date.now();
+      prefs.save();
+    });
   },
 
   revealMenu: function () {
+    $('#app-name').css({'padding-left': 0});
     $('#tasks-btn').show();
     // $('#account-name-label').show();
     $("#top-menu").show();
@@ -747,35 +765,28 @@ var app = {
       app._contacts = contacts;
       $('#contacts-list').children().remove();
       for (var name in contacts) {
-        var html = '<li id="contact-'
+        var html = '<li class="contact-record" id="contact-'
                    + name
                    + '">'
                    + name
                    + '</li>';
         $('#contacts-list').append($(html));
-        // var _btn = '<button id="compose-"' + name + '-btn">Send</button>';
-        // var btn = $('#contacts-' + name).prepend($(_btn));
-
-        var id = '#contact-' + name; // XXXddahl: need an inner node for click event
-        $(id).click(function () {
-          app.contactDetails(name);
-          // set the message button event handler inside this one...
-          $('#contacts-detail-message-btn').click(function () {
-            app.showComposeUI(name);
-          });
-        });
-
-        // var composeId = '#compose-' + name + '-btn';
-        // console.log($(composeId));
-        // $(composeId).click(function () {
-        //   app.showComposeUI(name);
-        // });
       }
+
+      $('.contact-record').click(function () {
+        var contact = $(this).text();
+        console.log(contact);
+        app.contactDetails(contact);
+        // set the message button event handler inside this one...
+        $('#contacts-detail-message-btn').click(function () {
+          app.showComposeUI(contact);
+        });
+      });
+
     });
   },
 
   contactDetails: function (name) {
-    $('.contact-id').remove();
     var contact = app._contacts[name];
     // display the contact's fingerprint ID card:
     var canvas = app.card.createIdCard(contact.fingerprint,
