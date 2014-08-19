@@ -191,11 +191,10 @@ var app = {
     $('.view').hide();
     $('.main-btn').hide();
     $('#tasks-btn').hide();
-    // $('#account-name-label').hide();
-    // $('#account-name').html("");
     $('#account-login').show();
     $('#login-buttons').show();
     $('#password-login').val("");
+    $('#app-name').css({'padding-left': '1em'});
     app.alert("You are logged out", 'info');
   },
 
@@ -428,6 +427,7 @@ var app = {
         peer.trust(function (err) {
           if (err) {
             console.log('peer trust failed: ' + err);
+            app.alert(err, 'warning');
           } else {
             app.alert('Peer ' + username + ' is now a trusted contact!',
                       'success');
@@ -460,6 +460,8 @@ var app = {
       var peerIdGrid = app.card.createIdentigrid(peerColorArr, 120, 120);
 
       if (peer.fingerprint == outOfBandFingerprint) {
+        $('#verify-user-success').show();
+        $('#verify-user-failure').hide();
         var conf = '<p>The <strong>server supplied</strong> '
                  + 'ID color grid for <strong>'
                  + username
@@ -490,6 +492,9 @@ var app = {
         $('#verify-trust-save').show();
         $('#verify-trust-cancel').show();
       } else {
+        // Failure to match fingerprints
+        $('#verify-user-success').hide();
+        $('#verify-user-failure').show();
         $('#verify-trust-failure-ok').show();
         $('#verify-trust-save').hide();
         $('#verify-trust-cancel').hide();

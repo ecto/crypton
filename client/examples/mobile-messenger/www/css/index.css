@@ -213,3 +213,7 @@ h1 {
 .full-message {
     display: none;
 }
+
+.alert {
+    margin-top: 1em;
+}
