@@ -70,6 +70,11 @@ var app = {
       app.login();
     });
 
+    $("#login-form").submit(function (e) {
+      e.preventDefault();
+      app.login();
+    });
+
     $('#my-contacts').click(function () {
       hideMainButtons('my-contacts');
       $('.view').hide();
@@ -179,11 +184,12 @@ var app = {
                                                   + message
                                                   + '</div>';
     var node = $(html);
-    $('#app').append(node);
+    $('#app').prepend(node);
     window.setTimeout(function () {
-      node.fadeOut('slow');
-      node.remove();
-    }, 3000);
+      node.slideUp(100, function () {
+        node.remove();
+      });
+    }, 2000);
   },
 
   logout: function () {
@@ -305,7 +311,7 @@ var app = {
         $('#login-buttons').show();
         callback(err);
       }
-      app.setLoginStatus('Logging in...');
+
       app.login();
     });
   },
@@ -313,12 +319,18 @@ var app = {
   login: function () {
     $('#login-progress').show();
     $('#login-buttons').hide();
+    $('#login-form').hide();
+    $('.alert').remove();
+
+    app.setLoginStatus('Logging in...');
+
     var user = $('#username-login').val();
     var pass = $('#password-login').val();
 
     function callback (err, session) {
       if (err) {
         app.alert(err, 'danger');
+        $('#login-form').show();
         $('#login-progress').hide();
         $('#login-buttons').show();
         app.clearLoginStatus();
