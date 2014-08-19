@@ -33,7 +33,7 @@ var app = {
                       'verify-id-card', 'my-contacts',
                       'find-users', 'logout'];
 
-    function hideMainButtons(exceptBtn) {
+    var hideMainButtons = app.hideMainButtons = function hideMainButtons(exceptBtn) {
       if (!exceptBtn) {
         console.error('exceptBtn is required');
         return;
@@ -47,7 +47,7 @@ var app = {
           }
         }
       }
-    }
+    };
 
     $('#scan').click(function () {
       app.scanQRCode();
@@ -390,45 +390,111 @@ var app = {
   },
 
   verifyUser: function (username, fingerprint) {
+    var rawFingerprintArr = fingerprint.split(' ');
+    var rawFingerprint = rawFingerprintArr.join('').toLowerCase();
+    // XXXddahl: the above ^^ is a hack to make this work for now
+    $('#verify-user-success-msg').children().remove();
+    $('#verify-user-failure-msg').children().remove();
+    $('#verify-trust-failure-ok').hide();
+    app.hideMainButtons('verify-user');
+    $('#verify-user').show();
+
     app.session.getPeer(username, function(err, peer) {
       if (err) {
         app.alert(err, 'danger');
         return;
       }
 
-      var peerFingerprint = app.formatFingerprint(peer.fingerprint);
+      function success () {
+        peer.trust(function (err) {
+          if (err) {
+            console.log('peer trust failed: ' + err);
+          } else {
+            app.alert('Peer ' + username + ' is now a trusted contact!',
+                      'success');
+            $('#verify-user-success-msg').children().remove();
+            // TODO: remove click events from buttons
+            app.hideMainButtons('verify-id-card');
+            $('.view').hide();
+            $('#scan-select').show();
+          }
+        });
+      }
 
-      if (peerFingerprint == fingerprint) {
-        var conf = 'The server supplied fingerprint for '
-                 + username
-                 + ' is: \n'
-                 + peerFingerprint
-                 + '\nThe fingerprint from the ID card is :\n'
-                 + fingerprint
-                 + '\nIt is a MATCH, click OK to verify '
-                 + username
-                 + ' as a trusted contact.'
+      function cancelTrust () {
+        $('#verify-user-success-msg').children().remove();
+        $('#verify-user-failure-msg').children().remove();
+        // TODO: remove click events from buttons
+        app.hideMainButtons('verify-id-card');
+        $('.view').hide();
+        $('#scan-select').show();
+      }
 
-        if (window.confirm(conf)) {
-          peer.trust(function (err) {
-            if (err) {
-              console.log('peer trust failed: ' + err);
-            } else {
-              app.alert('Peer ' + username + ' is now a trusted contact!',
-                        'success');
-            }
-          });
-        }
+      var outOfBandFingerprint = rawFingerprint;
+      var outOfBandFingerprintArr =
+        app.card.createFingerprintArr(outOfBandFingerprint);
+      var colorArr = app.card.createColorArr(outOfBandFingerprintArr);
+      var outOfBandIdGrid = app.card.createIdentigrid(colorArr, 120, 120);
+
+      var peerFingerprintArr = app.card.createFingerprintArr(peer.fingerprint);
+      var peerColorArr = app.card.createColorArr(peerFingerprintArr);
+      var peerIdGrid = app.card.createIdentigrid(peerColorArr, 120, 120);
+
+      if (peer.fingerprint == outOfBandFingerprint) {
+        var conf = '<p>The <strong>server supplied</strong> '
+                 + 'ID color grid for <strong>'
+                 + username
+                 + '</strong> is: </p>'
+                 + '<p id="server-idgrid-canvas"></p>'
+                 + '<p><strong>'
+                 + username
+                 + '\'s scanned/selected</strong> ID color grid '
+                 + 'is :</p>'
+                 + '<p id="outofband-idgrid-canvas"></p>'
+                 + '<p>It is a MATCH, click \'Trust and Save\' to add <strong>'
+                 + username
+                 + ' </strong> to your trusted contacts.</p>'
+        var msg = $(conf);
+        $('#verify-user-success-msg').append(msg);
+        // add canvases to DOM
+        $('#server-idgrid-canvas').append(peerIdGrid);
+
+        $('#outofband-idgrid-canvas').append(outOfBandIdGrid);
+
+        $('#verify-trust-save').click(function () {
+          success();
+        });
+
+        $('#verify-trust-cancel').click(function () {
+          cancelTrust();
+        });
+        $('#verify-trust-save').show();
+        $('#verify-trust-cancel').show();
       } else {
-        app.alert('The server supplied fingerprint for '
+        $('#verify-trust-failure-ok').show();
+        $('#verify-trust-save').hide();
+        $('#verify-trust-cancel').hide();
+
+        var conf = '<p>The server supplied</strong> '
+                 + 'ID color grid for <strong>'
              + username
-             + ' is: <br />'
-             + peerFingerprint
-             + '<br />The fingerprint from the ID card is :<br />'
-             + fingerprint
-             + '<br />It is NOT A MATCH<br />'
+             + '</strong> is: <p/>'
+             + '<p id="server-idgrid-canvas"></p>'
+             + '<p>The <strong>scanned</strong> ID card is :</p>'
+             + '<p id="outofband-idgrid-canvas"></p>'
+             + '<p>It is NOT A MATCH</p> <strong>'
              + username
-             + ' *Cannot* be a trusted contact.');
+             + ' </strong>*Cannot* be a trusted contact.';
+
+        var msg = $(conf);
+        $('#verify-user-failure-msg').append(msg);
+        // add canvases to DOM
+        $('#server-idgrid-canvas').append(peerIdGrid);
+        $('#outofband-idgrid-canvas').append(outOfBandIdGrid);
+
+        $('#verify-trust-failure-ok').click(function () {
+          cancelTrust();
+        });
       }
     });
   },

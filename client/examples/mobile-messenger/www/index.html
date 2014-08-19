@@ -28,27 +28,27 @@
 	  <li class="active main-btn" id="my-messages">
 	    <a href="#">
 	      <span id="num-messages" class="badge pull-right">0</span>
-	      <i class="fa fa-envelope"></i><span>Messages</span> Messages
+	      <i class="fa fa-envelope"></i> <span>Messages</span>
 	    </a>
 	  </li>
 	  <li class="main-btn" id="my-contacts">
 	    <a href="#">
-	      My Contacts
+	      <i class="fa fa-users"></i> My Contacts
 	    </a>
 	  </li>
 	  <li class="main-btn" id="my-fingerprint">
 	    <a href="#">
-	      My ID Card
+	      <i class="fa fa-user"></i> My ID Card
 	    </a>
 	  </li>
 	  <li class="main-btn" id="verify-id-card">
 	    <a href="#">
-	      Verify an ID Card
+	      <i class="fa fa-check-square-o"></i> Verify an ID Card
 	    </a>
 	  </li>
 	  <li class="main-btn" id="logout">
 	    <a href="#">
-	      Logout
+	      <i class="fa fa-sign-out"></i> Logout
 	    </a>
 	  </li>
 	</ul>
@@ -184,6 +184,27 @@
 	    <button class="btn btn-default" 
 		    id="create-id-card">Create ID Card</button>
 	  </p>
+	</div>
+
+	<div id="verify-user" class="view">
+	  <div id="verify-user-success">
+	    <h4>Success</h4>
+	    <p id="verify-user-success-msg"></p>
+	    <p>
+	      <button id="verify-trust-save" 
+		      class="btn btn-default">Trust & Save ID Card</button>
+	      <button id="verify-trust-cancel" 
+		      class="btn btn-default">Cancel</button>
+	    </p>
+	  </div>
+
+	  <div id="verify-user-failure">
+	    <p id="verify-user-failure-msg"></p>
+	    <p>	      
+	      <button id="verify-trust-failure-ok" 
+		      class="btn btn-default">OK</button>
+	      </p>
+	  </div>
 	</div>
 
 	<div id="images" class="view">

@@ -145,23 +145,29 @@ Card.prototype.createQRCode = function (fingerArr, username, appname, url) {
  *
  * @param {Array} colorArr
  */
-Card.prototype.createIdentigrid = function (colorArr) {
+Card.prototype.createIdentigrid = function (colorArr, height, width) {
   var canvas = document.createElement('canvas');
-  canvas.width = 200;
-  canvas.height = 200;
+  if (!height) {
+    height = 200;
+  }
+  if (!width) {
+    width = 200;
+  }
+  canvas.width = width;
+  canvas.height = height;
   var ctx = canvas.getContext('2d');
   var x = 0;
   var y = 0;
-  var w = 50;
-  var h = 50;
+  var w = (width / 4);
+  var h = (height / 4);
 
   for (var idx in colorArr) {
     ctx.fillStyle = colorArr[idx];
     ctx.fillRect(x, y , w, h);
-    x = (x + 50);
-    if (x == 200) {
+    x = (x + w);
+    if (x == width) {
       x = 0;
-      y = (y + 50);
+      y = (y + h);
     }
   }
 
