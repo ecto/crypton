@@ -131,6 +131,11 @@ h1 {
     margin-bottom: 1em;
 }
 
+#login-status {
+    font-weight: bold;
+    padding: 0.3em;
+}
+
 #app {
     background-color: #CFD8DC;
     position: absolute;

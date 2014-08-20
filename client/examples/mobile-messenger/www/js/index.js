@@ -188,6 +188,7 @@ var app = {
 
   logout: function () {
     app.session = null;
+    app.clearLoginStatus();
     $('.view').hide();
     $('.main-btn').hide();
     $('#tasks-btn').hide();
@@ -397,6 +398,7 @@ var app = {
 
   setLoginStatus: function (m) {
     $('#login-status .status').text(m);
+    $('#login-status').show();
   },
 
   clearLoginStatus: function (m) {
