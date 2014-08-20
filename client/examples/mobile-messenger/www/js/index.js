@@ -107,6 +107,7 @@ var app = {
         hideMainButtons('my-fingerprint');
         $('#my-fingerprint-id').show();
 */
+        $('#tasks-btn').addClass('active');
         app.switchView('#my-fingerprint-id', 'My Fingerprint');
         app.firstRunComplete();
       });
@@ -269,7 +270,6 @@ var app = {
     $('#login-progress').show();
     $('#login-buttons').hide();
     $('#login-form').hide();
-
 
     function callback (err) {
       $('#login-progress').hide();
