@@ -87,6 +87,10 @@ var app = {
       app.toggleMenu();
     });
 
+    $('#add-contact-button').click(function () {
+      app.switchView('#scan-select', 'Verify ID Card');
+    });
+
     $('#contacts-detail-dismiss-btn').click(function () {
       $('.contact-id').remove();
       app.switchView('#contacts', 'Contacts');

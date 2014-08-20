@@ -317,6 +317,15 @@ input[type="password"]:focus {
     margin: 15px 0;
 }
 
+#add-contact-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 20px;
+    border-radius: 50px !important;
+    padding: 19px 25px !important;
+}
+
 #compose-message {
     height: 8em;
 }
