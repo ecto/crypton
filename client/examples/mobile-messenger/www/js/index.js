@@ -341,10 +341,10 @@ var app = {
         }
 
         $('#password-login').val('');
-        app.switchView('#my-fingerprint-id', 'ID Card');
         app.displayMyFingerprint(true);
+        app.switchView('#my-fingerprint-id', 'ID Card');
         $('#tasks-btn').addClass('active');
-        app.revealMenu();
+        app.alert('Loading ID card', 'info');
       });
     }
 
