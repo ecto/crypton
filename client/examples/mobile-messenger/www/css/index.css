@@ -16,6 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+@font-face {
+    font-family: Roboto;
+    src: url(fonts/Roboto-Regular.ttf);
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: RobotoThin;
+    src: url(fonts/Roboto-Thin.ttf);
+    font-weight: light;
+}
+
+@font-face {
+    font-family: RobotoBold;
+    src: url(fonts/Roboto-Bold.ttf);
+    font-weight: bold;
+}
+
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
@@ -24,20 +42,7 @@ body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
-    /* background-color:#E4E4E4; */
-    /* background-image:linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%); */
-    /* background-image:-webkit-linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%); */
-    /* background-image:-ms-linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%); */
-    /* background-image:-webkit-gradient( */
-    /*     linear, */
-    /*     left top, */
-    /*     left bottom, */
-    /*     color-stop(0, #A7A7A7), */
-    /*     color-stop(0.51, #E4E4E4) */
-    /* ); */
-    /* background-attachment:fixed; */
-    font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
-    font-size:12px;
+    font-family: Roboto, 'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif !important;
     height:100%;
     margin:0px;
     padding:0px;
@@ -47,9 +52,10 @@ body {
 /* Portrait layout (default) */
 .app {
     position:absolute;
-    /* text-align:center; /\* position in the center of the screen *\/ */
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: white;
 }
 
@@ -109,26 +115,97 @@ h1 {
 }
 
 .view {
-    display: none;
-    margin-left: 1em;
-    margin-right: 1em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -webkit-transition: all 0.1s ease;
+}
+
+.view.active {
+    -webkit-transform: translate3d(0, 0, 0);
 }
 
 #top-menu {
-    display: none;
-    margin-bottom: 1em;
+    background: #1a1a1a !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    bottom: 0;
+    z-index: 20;
+    padding-top: 5px;
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -webkit-transition: all 0.1s ease;
+}
+
+#top-menu.active {
+    -webkit-transform: translate3d(0, 0, 0);
 }
 
 #login-progress {
+    margin: 10px 15px;
     display: none;
+}
+
+#login-status {
+    padding: 50px 15px 15px;
+    font-size: 1.3em;
+    text-align: center;
 }
 
 #login-form {
     margin-bottom: 1em;
+    padding: 15px;
 }
 
 #login-buttons {
     margin-bottom: 1em;
+    text-align: center;
+}
+
+input[type="text"],
+input[type="password"] {
+    border: 0;
+    border-radius: 0 !important;
+    border-bottom: 1px solid #e6e6e6;
+    outline: 0;
+    box-shadow: none;
+    display: block;
+    margin: 10px 0;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    font-family: Roboto, 'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif !important;
+    box-shadow: none !important;
+    outline: 0;
+    /*border-bottom: 1px solid #787878;*/
+    border-bottom-width: 2px;
+}
+
+::-webkit-input-placeholder {
+    color: #aaa !important;
+}
+
+.btn {
+    border: 0 !important;
+    border-radius: 2px !important;
+    box-shadow: 1px 2px 2px #ddd;
+    text-transform: uppercase;
+    font-size: 1.2em !important;
+    margin: 0 10px;
+    padding: 10px 20px !important;
+}
+
+.btn-primary {
+    background-color: #5677fc !important;
+}
+
+.btn-success {
+    background-color: #259b24 !important;
 }
 
 #login-status {
@@ -137,7 +214,7 @@ h1 {
 }
 
 #app {
-    background-color: #CFD8DC;
+    /*background-color: #CFD8DC;*/
     position: absolute;
     top: 56px;
     right: 0px;
@@ -148,8 +225,10 @@ h1 {
     overflow-y: auto;
 }
 
-#app-name {
-    padding-left: 1em;
+#page-title {
+    display: block;
+    text-align: center;
+    font-size: 24px;
 }
 
 #header {
@@ -158,14 +237,11 @@ h1 {
     right: 0px;
     left: 0px;
     height: 56px;
-    background-color: #607D8B;
+    line-height: 56px;
+    background-color: #3f51b5;
     box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.16), 0px 1px 2.5px 0px rgba(0, 0, 0, 0.26);
     color: #FFF;
     z-index: 10;
-}
-
-.header-title {
-    
 }
 
 #first-run {
@@ -180,8 +256,14 @@ h1 {
 #tasks-btn {
     display: none;
     color: inherit;
-    padding-left: 0.5em;
+    padding: 0 1em;
+    font-size: 1.5em;
     text-decoration: none;
+}
+
+#tasks-btn.active {
+    display: block;
+    position: absolute;
 }
 
 #account-name-label {
@@ -191,14 +273,25 @@ h1 {
 }
 
 .main-btn {
-    color: #ECE5E5;
-    font-size: 1.4em;
-    font-weight: bold;
-    border-bottom: 1px solid #607D8B;
+    color: #d1d1d1;
 }
 
 .main-btn a {
-    color: #607D8B;
+    color: #d1d1d1;
+    font-size: 1.1em;
+    padding: 13px 15px !important;
+}
+
+.main-btn a:hover {
+    background: none !important;
+    color: #34a5dd !important;
+}
+
+.main-btn i {
+    width: 40px;
+    font-size: 1.1em;
+    padding-left: 7px;
+    opacity: 0.9;
 }
 
 #find-user-form {
@@ -219,6 +312,59 @@ h1 {
     display: none;
 }
 
+#alerts {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
 .alert {
-    margin-top: 1em;
+    background: #323232 !important;
+    border: none !important;
+    border-radius: 2px !important;
+    color: #fff;
+    margin: 2em !important;
+    text-align: center;
+    padding: 15px 20px !important;
+}
+
+.alert-danger {
+    background: #e51c23 !important;
+    color: #fff !important;
+}
+
+.alert-info {
+    color: #fff !important;
+}
+
+.progress {
+    height: 10px !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+}
+
+
+@-webkit-keyframes progress-bar-stripes-alternate {
+  from {
+    background-position: 50% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.progress-bar {
+    -webkit-animation: progress-bar-stripes-alternate 0.8s linear infinite !important;
+    background-image: linear-gradient(90deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent) !important;
+    background-color: #259b24 !important;
+    background-size: 50% !important;
+}
+
+h3 {
+    margin-top: 0 !important;
+}
+
+strong {
+    font-family: RobotoBold;
 }

@@ -15,17 +15,17 @@
     </head>
     <body>
       <div id="header">
-	<h3 class="header-title">
-	  <a href="#" id="tasks-btn">
-            <i class="fa fa-home"></i>
-	  </a>
-	  <span id="app-name">Messenger</span>
-	</h3>
+        <a href="#" id="tasks-btn">
+          <i class="fa fa-bars"></i>
+        </a>
+        <span id="page-title">Crypton Messenger</span>
       </div>
 
       <div id="app" class="app container-fluid">
+        <div id="alerts"></div>
+
 	<ul id="top-menu" class="menu nav nav-stacked">
-	  <li class="active main-btn" id="my-messages">
+	  <li class="main-btn" id="my-messages">
 	    <a href="#">
 	      <span id="num-messages" class="badge pull-right">0</span>
 	      <i class="fa fa-envelope"></i> <span>Messages</span>
@@ -74,8 +74,8 @@
 
 	</div>
 
-	<div id="account-login" class="view">
-	  <div id="login-form" class="input-group input-group-lg">
+	<div id="account-login" class="view active">
+	  <form id="login-form" class="input-group input-group-lg">
 	    <input placeholder="Username"
 		   size="12"
 		   maxlength="32"
@@ -87,15 +87,17 @@
 		   class="form-control login-input"
 		   id="password-login" type="password" 
 		   autocomplete="off" />
+	  </form>
+
+	  <div id="login-buttons">
+	    <button class="btn btn-success"
+		    id="login-btn">Login</button>
+	    <button class="btn btn-primary" 
+		    id="register-btn">Create Account</button>
 	  </div>
+
 	  <div id="login-status">
 	    <span class="status"></span>
-	  </div>
-	  <div id="login-buttons" class="btn-group btn-group-lg">
-	    <button class="btn btn-default" 
-		    id="register-btn">Create Account</button>
-	    <button class="btn btn-default"
-		    id="login-btn">Login</button>
 	  </div>
 
 	  <div id="login-progress" 
@@ -105,7 +107,6 @@
 		 aria-valuemax="100" style="width: 100%">
 	    </div>
 	  </div>
-
 	</div>
 
 	<div id="scan-select" class="view">
@@ -173,15 +174,16 @@
 
 	<div id="first-run" class="view">
 	  <h3>Initial Setup</h3>
-	  <h3>Now that you have an account...</h3>
+	  <p><strong>Congratulations! You've signed up for Crypton Messenger.</strong></p>
 	  <p>
-	    You need to create an application <i>'ID Card'</i>, which identifies you to other users of this application you would like to communicate with.
+      Now that you have an account, you need to create an application <strong>ID Card</strong>, which identifies you to other users of this application you would like to communicate with.
 	  </p>
 	  <p>
-	    Once you share this <i>'ID Card'</i> with another user, and you have received thiers, you can privately communicate with them.
+	    Once you share this <strong>ID Card</strong> with another user, and you have received thiers, you can privately communicate with them.
 	  </p>
-	  <p>
-	    <button class="btn btn-default" 
+    <br />
+	  <p class="text-center">
+	    <button class="btn btn-success" 
 		    id="create-id-card">Create ID Card</button>
 	  </p>
 	</div>

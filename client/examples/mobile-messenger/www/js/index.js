@@ -6,7 +6,6 @@ var app = {
   // Application Constructor
   initialize: function() {
     app.enableLoginButtons();
-    $('#account-login').show();
     $('#username-login').focus();
     crypton.host = 'nulltxt.se';
     this.card =  new crypton.Card();
@@ -30,25 +29,6 @@ var app = {
   // 'load', 'deviceready', 'offline', and 'online'.
   bindEvents: function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
-    var mainBtnIds = ['my-messages', 'my-fingerprint',
-                      'verify-id-card', 'my-contacts',
-                      'find-users', 'logout'];
-
-    var hideMainButtons = app.hideMainButtons = function hideMainButtons(exceptBtn) {
-      if (!exceptBtn) {
-        console.error('exceptBtn is required');
-        return;
-      }
-      for (var i = 0; i < mainBtnIds.length; i++) {
-        if (mainBtnIds[i] != exceptBtn) {
-          var node = $('#' + mainBtnIds[i])[0];
-          console.log(node);
-          if (node) {
-            $(node).hide();
-          }
-        }
-      }
-    };
 
     $('#scan').click(function () {
       app.scanQRCode();
@@ -70,29 +50,29 @@ var app = {
       app.login();
     });
 
+    $("#login-form").submit(function (e) {
+      e.preventDefault();
+      app.login();
+    });
+
     $('#my-contacts').click(function () {
-      hideMainButtons('my-contacts');
-      $('.view').hide();
+      app.hideMenu();
       app.displayContacts();
     });
 
     $('#verify-id-card').click(function () {
-      hideMainButtons('verify-id-card');
-      $('.view').hide();
-      $('#scan-select').show();
+      app.hideMenu();
+      app.switchView('#scan-select', 'Verify ID Card');
     });
 
     $('#my-fingerprint').click(function () {
-      hideMainButtons('my-fingerprint');
-      $('.view').hide();
-      $('#my-fingerprint-id').show();
+      app.hideMenu();
+      app.switchView('#my-fingerprint-id', 'My Fingerprint');
       app.displayMyFingerprint(true);
     });
 
     $('#find-users').click(function () {
-      hideMainButtons('find-users');
-      $('.view').hide();
-      $('#find-users-view').show();
+      app.switchView('#find-users-view', 'Find Users');
     });
 
     $('#find-someone-btn').click(function () {
@@ -101,14 +81,13 @@ var app = {
     });
 
     $('#tasks-btn').click(function (){
-      $('.main-btn').show();
-      $('.view').hide();
+      app.toggleMenu();
     });
 
     $('#contacts-detail-dismiss-btn').click(function () {
       $('.contact-id').remove();
       $('#contact-details').hide();
-      $('#contacts').show();
+      app.switchView('#contacts', 'Contacts');
     });
 
     $('#compose-send-btn').click(function () {
@@ -116,17 +95,19 @@ var app = {
     });
 
     $('#my-messages').click(function () {
-      hideMainButtons('my-messages');
-      $('.view').hide();
-      $('#messages').show();
+      app.hideMenu();
+      app.switchView('#messages', 'Messages');
     });
 
     $('#create-id-card').click(function () {
       app.firstRunCreateIdCard( function () {
+/*
         $('.view').hide();
         app.revealMenu();
         hideMainButtons('my-fingerprint');
         $('#my-fingerprint-id').show();
+*/
+        app.switchView('#my-fingerprint-id', 'My Fingerprint');
         app.firstRunComplete();
       });
     });;
@@ -142,6 +123,13 @@ var app = {
         }
     });
   },
+
+  switchView: function (id, name) {
+    $('.view').removeClass('active');
+    $('#page-title').text(name);
+    $(id).addClass('active');
+  },
+
   // deviceready Event Handler
   //
   // The scope of 'this' is the event. In order to call the 'receivedEvent'
@@ -179,24 +167,21 @@ var app = {
                                                   + message
                                                   + '</div>';
     var node = $(html);
-    $('#app').append(node);
+    $('#alerts').prepend(node);
     window.setTimeout(function () {
-      node.fadeOut('slow');
-      node.remove();
-    }, 3000);
+      node.slideUp(100, function () {
+        node.remove();
+      });
+    }, 2000);
   },
 
   logout: function () {
     app.session = null;
-    app.clearLoginStatus();
-    $('.view').hide();
-    $('.main-btn').hide();
-    $('#tasks-btn').hide();
-    $('#account-login').show();
-    $('#login-buttons').show();
-    $('#password-login').val("");
-    $('#app-name').css({'padding-left': '1em'});
-    app.alert("You are logged out", 'info');
+    app.hideMenu();
+    app.switchView('#account-login', 'Crypton Messenger');
+    $('#tasks-btn').removeClass('active');
+    app.alert('You are logged out', 'info');
+    $('#password-login').focus();
   },
 
   scanQRCode: function () {
@@ -277,19 +262,27 @@ var app = {
 
   createAccount: function () {
     $('#login-progress').show();
+
     var user = $('#username-login').val();
     var pass = $('#password-login').val();
+
+    $('#login-progress').show();
+    $('#login-buttons').hide();
+    $('#login-form').hide();
+
+
     function callback (err) {
+      $('#login-progress').hide();
+      $('#login-buttons').show();
+      $('#login-form').show();
+      app.clearLoginStatus();
+
       if (err) {
-        $('#login-progress').hide();
-        app.setLoginStatus(err);
+        app.alert(err, 'danger');
         return;
       }
-      $('.view').hide();
-      $('#scan-select').show();
-      // $('#account-name-label').show();
-      // $('#account-name').text(user);
-      $('#login-progress').hide();
+
+      app.switchView('#scan-select', 'Verify ID Card');
     }
 
     app.register(user, pass, callback);
@@ -300,13 +293,17 @@ var app = {
 
     $('#login-progress').show();
     $('#login-buttons').hide();
+    $('#login-form').hide();
+
     crypton.generateAccount(user, pass, function (err) {
       if (err) {
         $('#login-progress').hide();
         $('#login-buttons').show();
-        callback(err);
+        $('#login-form').show();
+
+        return callback(err);
       }
-      app.setLoginStatus('Logging in...');
+
       app.login();
     });
   },
@@ -314,34 +311,51 @@ var app = {
   login: function () {
     $('#login-progress').show();
     $('#login-buttons').hide();
+    $('#login-form').hide();
+    $('.alert').remove();
+
+    app.setLoginStatus('Logging in...');
+
     var user = $('#username-login').val();
     var pass = $('#password-login').val();
 
     function callback (err, session) {
       if (err) {
         app.alert(err, 'danger');
+        $('#login-form').show();
         $('#login-progress').hide();
         $('#login-buttons').show();
         app.clearLoginStatus();
         return;
       }
-      $('.view').hide();
+
       // $('#account-name').text(user);
       app.username = user;
       app.session = session;
-      $('#login-progress').hide();
-      $('#login-buttons').show();
+      app.setLoginStatus('Loading data...');
+
       // Check for first run
       app.loadOrCreateContainer('_prefs_', function(err, rawContainer) {
+        $('#login-progress').hide();
+        $('#login-buttons').show();
+        $('#login-form').show();
+        app.clearLoginStatus();
+
         if (err) {
           console.error(err);
           return;
         }
+
         var prefs = rawContainer.keys;
         if (!prefs['first-run']) {
           app.firstRun();
           return;
         }
+
+        $('#password-login').val('');
+        app.switchView('#my-fingerprint-id', 'My Fingerprint');
+        app.displayMyFingerprint(true);
+        $('#tasks-btn').addClass('active');
         app.revealMenu();
       });
     }
@@ -356,8 +370,7 @@ var app = {
 
   firstRun: function () {
     // prompt to create Id card & why
-    $('.view').hide();
-    $('#first-run').show();
+    app.switchView('#first-run', 'Welcome');
   },
 
   firstRunComplete: function () {
@@ -373,20 +386,22 @@ var app = {
     });
   },
 
-  revealMenu: function () {
-    $('#app-name').css({'padding-left': 0, 'margin-right': 0 });
+  toggleMenu: function () {
+    var $menu = $('#top-menu');
 
-    $('#tasks-btn').show();
-    // $('#account-name-label').show();
-    $("#top-menu").show();
-    $(".main-btn").show();
+    if ($menu.hasClass('active')) {
+      $menu.removeClass('active');
+    } else {
+      $menu.addClass('active');
+    }
+  },
+
+  revealMenu: function () {
+    $('#top-menu').addClass('active');
   },
 
   hideMenu: function () {
-    $('#tasks-btn').hide();
-    // $('#account-name-label').hide();
-    $("#top-menu").hide();
-    $(".main-btn").hide();
+    $('#top-menu').removeClass('active');
   },
 
   disableLoginButtons: function () {
@@ -441,9 +456,7 @@ var app = {
                       'success');
             $('#verify-user-success-msg').children().remove();
             // TODO: remove click events from buttons
-            app.hideMainButtons('verify-id-card');
-            $('.view').hide();
-            $('#scan-select').show();
+            app.switchView('#scan-select', 'Verify ID Card');
           }
         });
       }
@@ -452,9 +465,8 @@ var app = {
         $('#verify-user-success-msg').children().remove();
         $('#verify-user-failure-msg').children().remove();
         // TODO: remove click events from buttons
-        app.hideMainButtons('verify-id-card');
-        $('.view').hide();
-        $('#scan-select').show();
+
+        app.switchView('#scan-select', 'Verify ID Card');
       }
 
       var outOfBandFingerprint = rawFingerprint;
@@ -569,8 +581,7 @@ var app = {
 
   displayPeerFingerprint: function (username, fingerprint) {
     $('#peer-fingerprint-id').children().remove();
-    $('.view').hide();
-    $('#peer-fingerprint-id').show();
+    app.switchView('#peer-fingerprint-id', 'Peer Fingerprint');
 
     var canvas =
       app.card.createIdCard(fingerprint, username,
@@ -769,13 +780,14 @@ var app = {
   },
 
   displayContacts: function () {
+    app.switchView('#contacts', 'Contacts');
     console.log("displayContacts()");
+
     app.getContactsFromServer(function (err, contacts) {
       if (err) {
         app.alert(err, 'danger');
         return;
       }
-      $('#contacts').show();
       app._contacts = contacts;
       $('#contacts-list').children().remove();
       for (var name in contacts) {
