@@ -813,6 +813,7 @@ var app = {
                                         app.APPNAME, app.URL);
     $(canvas).css({ width: '300px', 'margin-top': '1em'});
     $(canvas).attr({'class': 'contact-id'});
+    $('#contact-details .contact-id').remove();
     $('#contact-details').prepend(canvas);
 
     app.switchView('#contact-details', name);
