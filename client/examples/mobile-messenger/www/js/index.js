@@ -203,6 +203,7 @@ var app = {
     cordova.plugins.barcodeScanner.scan(
       function (result) {
         var userObj = JSON.parse(result.text);
+        console.log(userObj);
         app.verifyUser(userObj.username, userObj.fingerprint);
       },
       function (error) {
@@ -410,6 +411,11 @@ var app = {
   },
 
   verifyUser: function (username, fingerprint) {
+    if (!fingerprint) {
+      var error = 'ID Fingerprint was not extracted';
+      app.alert(error, 'danger');
+      return console.error(error);
+    }
     var rawFingerprintArr = fingerprint.split(' ');
     var rawFingerprint = rawFingerprintArr.join('').toLowerCase();
     // XXXddahl: the above ^^ is a hack to make this work for now
