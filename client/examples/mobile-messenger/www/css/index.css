@@ -115,14 +115,34 @@ h1 {
 }
 
 .view {
-    display: none;
-    margin-left: 1em;
-    margin-right: 1em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -webkit-transition: all 0.1s ease;
+}
+
+.view.active {
+    -webkit-transform: translate3d(0, 0, 0);
 }
 
 #top-menu {
-    display: none;
-    margin-bottom: 1em;
+    background: #1a1a1a !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    bottom: 0;
+    z-index: 20;
+    padding-top: 5px;
+    -webkit-transform: translate3d(-100%, 0, 0);
+    -webkit-transition: all 0.1s ease;
+}
+
+#top-menu.active {
+    -webkit-transform: translate3d(0, 0, 0);
 }
 
 #login-progress {
@@ -200,7 +220,7 @@ input[type="password"]:focus {
     overflow-y: auto;
 }
 
-#app-name {
+#page-title {
     display: block;
     text-align: center;
     font-size: 24px;
@@ -231,8 +251,14 @@ input[type="password"]:focus {
 #tasks-btn {
     display: none;
     color: inherit;
-    padding-left: 0.5em;
+    padding: 0 1em;
+    font-size: 1.5em;
     text-decoration: none;
+}
+
+#tasks-btn.active {
+    display: block;
+    position: absolute;
 }
 
 #account-name-label {
@@ -242,14 +268,25 @@ input[type="password"]:focus {
 }
 
 .main-btn {
-    color: #ECE5E5;
-    font-size: 1.4em;
-    font-weight: bold;
-    border-bottom: 1px solid #607D8B;
+    color: #d1d1d1;
 }
 
 .main-btn a {
-    color: #607D8B;
+    color: #d1d1d1;
+    font-size: 1.1em;
+    padding: 13px 15px !important;
+}
+
+.main-btn a:hover {
+    background: none !important;
+    color: #34a5dd !important;
+}
+
+.main-btn i {
+    width: 40px;
+    font-size: 1.1em;
+    padding-left: 7px;
+    opacity: 0.9;
 }
 
 #find-user-form {
@@ -270,16 +307,30 @@ input[type="password"]:focus {
     display: none;
 }
 
+#alerts {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
 .alert {
-    margin: 0 !important;
+    background: #323232 !important;
+    border: none !important;
+    border-radius: 2px !important;
+    color: #fff;
+    margin: 2em !important;
     text-align: center;
-    padding: 15px 0 0 !important;
+    padding: 15px 20px !important;
 }
 
 .alert-danger {
-    background: none !important;
-    border: none !important;
-    color: #e51c23 !important;
+    background: #e51c23 !important;
+    color: #fff !important;
+}
+
+.alert-info {
+    color: #fff !important;
 }
 
 .progress {
@@ -306,9 +357,9 @@ input[type="password"]:focus {
 }
 
 h3 {
-  margin-top: 0 !important;
+    margin-top: 0 !important;
 }
 
 strong {
-  font-family: RobotoBold;
+    font-family: RobotoBold;
 }
