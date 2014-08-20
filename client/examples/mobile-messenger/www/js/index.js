@@ -70,7 +70,7 @@ var app = {
 
     $('#my-fingerprint').click(function () {
       app.hideMenu();
-      app.switchView('#my-fingerprint-id', 'My Fingerprint');
+      app.switchView('#my-fingerprint-id', 'ID Card');
       app.displayMyFingerprint(true);
     });
 
@@ -89,7 +89,6 @@ var app = {
 
     $('#contacts-detail-dismiss-btn').click(function () {
       $('.contact-id').remove();
-      $('#contact-details').hide();
       app.switchView('#contacts', 'Contacts');
     });
 
@@ -104,14 +103,8 @@ var app = {
 
     $('#create-id-card').click(function () {
       app.firstRunCreateIdCard( function () {
-/*
-        $('.view').hide();
-        app.revealMenu();
-        hideMainButtons('my-fingerprint');
-        $('#my-fingerprint-id').show();
-*/
         $('#tasks-btn').addClass('active');
-        app.switchView('#my-fingerprint-id', 'My Fingerprint');
+        app.switchView('#my-fingerprint-id', 'ID Card');
         app.firstRunComplete();
       });
     });;
@@ -348,7 +341,7 @@ var app = {
         }
 
         $('#password-login').val('');
-        app.switchView('#my-fingerprint-id', 'My Fingerprint');
+        app.switchView('#my-fingerprint-id', 'ID Card');
         app.displayMyFingerprint(true);
         $('#tasks-btn').addClass('active');
         app.revealMenu();
@@ -821,8 +814,8 @@ var app = {
     $(canvas).css({ width: '300px', 'margin-top': '1em'});
     $(canvas).attr({'class': 'contact-id'});
     $('#contact-details').prepend(canvas);
-    $('#contacts').hide();
-    $('#contact-details').show();
+
+    app.switchView('#contact-details', name);
   },
 
   getContactsFromServer: function (callback) {
@@ -1069,9 +1062,8 @@ var app = {
   },
 
   showComposeUI: function (recipient) {
-    $('.view').hide();
     $('#compose-recipient').val(recipient);
-    $('#compose-message').show();
+    app.switchView('#compose-message', 'Compose Message');
     $('#compose-subject').focus();
     $('#compose-send-btn').click(function () {
       app.send();
