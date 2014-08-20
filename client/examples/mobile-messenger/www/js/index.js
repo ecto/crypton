@@ -29,6 +29,9 @@ var app = {
   // 'load', 'deviceready', 'offline', and 'online'.
   bindEvents: function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
+    $('.view').click(function () {
+      app.hideMenu();
+    });
 
     $('#scan').click(function () {
       app.scanQRCode();
@@ -201,11 +204,7 @@ var app = {
   getPhoto: function (callback) {
     // via the CAMERA
     function onSuccess (imageURI) {
-      console.log(imageURI);
-      // XXXddahl: should not have to add to the DOM here!
-      // We should just return an image object
-      var img = $('#picture')[0];
-      img.src = "data:image/jpeg;base64," + imageURI;
+      var img = "data:image/jpeg;base64," + imageURI;
       callback(null, img);
     }
 
@@ -229,16 +228,12 @@ var app = {
 
   getImage: function () {
     function onSuccess (imageURI) {
-      console.log(imageURI);
-      var largeImage = document.getElementById('picture');
-      largeImage.style.display = 'block';
-      largeImage.src = imageURI;
-
       qrcode.callback = function (data) {
         // alert(data);
         var userObj = JSON.parse(data);
         app.verifyUser(userObj.username, userObj.fingerprint);
       };
+
       try {
         qrcode.decode(imageURI);
       } catch (e) {
@@ -431,14 +426,16 @@ var app = {
       app.alert(error, 'danger');
       return console.error(error);
     }
+
     var rawFingerprintArr = fingerprint.split(' ');
     var rawFingerprint = rawFingerprintArr.join('').toLowerCase();
     // XXXddahl: the above ^^ is a hack to make this work for now
+
     $('#verify-user-success-msg').children().remove();
     $('#verify-user-failure-msg').children().remove();
     $('#verify-trust-failure-ok').hide();
-    app.hideMainButtons('verify-user');
-    $('#verify-user').show();
+
+    app.switchView('#verify-user', 'Verify User');
 
     app.session.getPeer(username, function(err, peer) {
       if (err) {
@@ -450,10 +447,10 @@ var app = {
         peer.trust(function (err) {
           if (err) {
             console.log('peer trust failed: ' + err);
-            app.alert(err, 'warning');
+            app.switchView('#scan-select', 'Verify ID Card');
+            app.alert(err, 'danger');
           } else {
-            app.alert('Peer ' + username + ' is now a trusted contact!',
-                      'success');
+            app.alert(username + ' is now a trusted contact', 'info');
             $('#verify-user-success-msg').children().remove();
             // TODO: remove click events from buttons
             app.switchView('#scan-select', 'Verify ID Card');
@@ -672,6 +669,7 @@ var app = {
         if (err) {
           return callback(err);
         }
+
         // paste photo into ID:
         function pastePhoto(imageData, idCard) {
           var thumb = app.thumbnail(imageData, 100, 100);
@@ -679,30 +677,32 @@ var app = {
           ctx.drawImage(thumb, 280, 10);
           return idCard;
         }
+
         var photo = rawContainer;
+
         if (photo.keys['imgData']) {
           // XXXddahl: try ??
           var photoIdCard = pastePhoto(photo.keys['imgData'], idCard);
           return callback(null, idCard);
-        } else {
-          app.getPhoto(function (err, image) {
-            console.log('getPhoto Callback');
-            console.log(image);
-            photo.keys['imgData'] = image.src;
-            photo.save(function (err){
-              if (err) {
-                var _err = 'Cannot save photo data to server';
-                console.error(_err + ' ' + err);
-                return app.alert(_err);
-              }
-              // photo is saved to the server
-              var photoIdCard =
-                pastePhoto(photo.keys['imgData'], idCard);
-              // console.log(photoIdCard);
-              return callback(null, photoIdCard);
-            });
-          });
         }
+
+        app.getPhoto(function (err, imageSrc) {
+          photo.keys['imgData'] = imageSrc;
+
+          photo.save(function (err){
+            if (err) {
+              var _err = 'Cannot save photo data to server';
+              console.error(_err + ' ' + err);
+              return app.alert(_err);
+            }
+
+            // photo is saved to the server
+            var photoIdCard =
+              pastePhoto(photo.keys['imgData'], idCard);
+            // console.log(photoIdCard);
+            return callback(null, photoIdCard);
+          });
+        });
     });
   },
 
