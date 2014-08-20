@@ -208,6 +208,11 @@ input[type="password"]:focus {
     background-color: #259b24 !important;
 }
 
+#login-status {
+    font-weight: bold;
+    padding: 0.3em;
+}
+
 #app {
     /*background-color: #CFD8DC;*/
     position: absolute;

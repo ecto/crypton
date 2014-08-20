@@ -188,6 +188,7 @@ var app = {
     cordova.plugins.barcodeScanner.scan(
       function (result) {
         var userObj = JSON.parse(result.text);
+        console.log(userObj);
         app.verifyUser(userObj.username, userObj.fingerprint);
       },
       function (error) {
@@ -413,6 +414,7 @@ var app = {
 
   setLoginStatus: function (m) {
     $('#login-status .status').text(m);
+    $('#login-status').show();
   },
 
   clearLoginStatus: function (m) {
@@ -424,6 +426,11 @@ var app = {
   },
 
   verifyUser: function (username, fingerprint) {
+    if (!fingerprint) {
+      var error = 'ID Fingerprint was not extracted';
+      app.alert(error, 'danger');
+      return console.error(error);
+    }
     var rawFingerprintArr = fingerprint.split(' ');
     var rawFingerprint = rawFingerprintArr.join('').toLowerCase();
     // XXXddahl: the above ^^ is a hack to make this work for now
@@ -443,6 +450,7 @@ var app = {
         peer.trust(function (err) {
           if (err) {
             console.log('peer trust failed: ' + err);
+            app.alert(err, 'warning');
           } else {
             app.alert('Peer ' + username + ' is now a trusted contact!',
                       'success');
@@ -472,6 +480,8 @@ var app = {
       var peerIdGrid = app.card.createIdentigrid(peerColorArr, 120, 120);
 
       if (peer.fingerprint == outOfBandFingerprint) {
+        $('#verify-user-success').show();
+        $('#verify-user-failure').hide();
         var conf = '<p>The <strong>server supplied</strong> '
                  + 'ID color grid for <strong>'
                  + username
@@ -502,6 +512,9 @@ var app = {
         $('#verify-trust-save').show();
         $('#verify-trust-cancel').show();
       } else {
+        // Failure to match fingerprints
+        $('#verify-user-success').hide();
+        $('#verify-user-failure').show();
         $('#verify-trust-failure-ok').show();
         $('#verify-trust-save').hide();
         $('#verify-trust-cancel').hide();
