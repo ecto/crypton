@@ -201,23 +201,37 @@
 
 	<div id="verify-user" class="view">
 	  <div id="verify-user-success">
-	    <h4>Success</h4>
-	    <p id="verify-user-success-msg"></p>
-	    <p>
+	    <p><strong>Successfully captured fingerprint</strong></p>
+      <p>
+        The following images are generated from the key fingerprint data from
+        the server and the scan, respectively. Ensure the following images are identical.
+      </p>
+	    <div id="verify-user-success-msg"></div>
+      <p>
+        The computer thinks these <strong>match</strong>.
+      </p>
+      <p>
+        If they do, tap <strong>Trust</strong> below.
+      </p>
+      <p>
+        If not, take a screenshot of this, press <strong>Cancel</strong>,
+        and speak with the person who sent you this ID card.
+      </p>
+	    <div id="verify-user-buttons">
 	      <button id="verify-trust-save" 
-		      class="btn btn-default">Trust & Save ID Card</button>
+		      class="btn btn-success">Trust</button>
 	      <button id="verify-trust-cancel" 
-		      class="btn btn-default">Cancel</button>
-	    </p>
+		      class="btn btn-danger">Cancel</button>
+	    </div>
 	  </div>
 
 	  <div id="verify-user-failure">
-	    <h4>Failure</h4>
-	    <p id="verify-user-failure-msg"></p>
-	    <p>	      
+      <p><strong>Failed to capture fingerprint</strong></p>
+	    <div id="verify-user-failure-msg"></div>
+	    <div>
 	      <button id="verify-trust-failure-ok" 
 		      class="btn btn-default">OK</button>
-	      </p>
+      </div>
 	  </div>
 	</div>
 

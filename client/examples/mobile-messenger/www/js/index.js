@@ -472,19 +472,10 @@ var app = {
       if (peer.fingerprint == outOfBandFingerprint) {
         $('#verify-user-success').show();
         $('#verify-user-failure').hide();
-        var conf = '<p>The <strong>server supplied</strong> '
-                 + 'ID color grid for <strong>'
-                 + username
-                 + '</strong> is: </p>'
-                 + '<p id="server-idgrid-canvas"></p>'
-                 + '<p><strong>'
-                 + username
-                 + '\'s scanned/selected</strong> ID color grid '
-                 + 'is :</p>'
-                 + '<p id="outofband-idgrid-canvas"></p>'
-                 + '<p>It is a MATCH, click \'Trust and Save\' to add <strong>'
-                 + username
-                 + ' </strong> to your trusted contacts.</p>'
+        var conf = '<div id="server-supplied"><strong>Server supplied</strong>'
+                 + '<p id="server-idgrid-canvas"></p></div>'
+                 + '<div id="scan-spplied"><strong>Scan supplied</strong>'
+                 + '<p id="outofband-idgrid-canvas"></p></div>';
         var msg = $(conf);
         $('#verify-user-success-msg').append(msg);
         // add canvases to DOM

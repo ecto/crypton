@@ -338,6 +338,32 @@ input[type="password"]:focus {
   text-align: center;
 }
 
+#verify-user {
+  padding: 20px;
+}
+
+#verify-user-buttons {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#verify-user-success-msg {
+  text-align: center;
+}
+
+#verify-user-success-msg canvas {
+  padding-top: 10px;
+}
+
+#server-supplied {
+  float: left;
+}
+
+#scan-supplied {
+  margin-left: 15px;
+  float: right;
+}
+
 .full-message {
     display: none;
 }
