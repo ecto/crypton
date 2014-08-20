@@ -70,7 +70,7 @@ var app = {
 
     $('#my-fingerprint').click(function () {
       app.hideMenu();
-      app.switchView('#my-fingerprint-id', 'My Fingerprint');
+      app.switchView('#my-fingerprint-id', 'ID Card');
       app.displayMyFingerprint(true);
     });
 
@@ -103,14 +103,8 @@ var app = {
 
     $('#create-id-card').click(function () {
       app.firstRunCreateIdCard( function () {
-/*
-        $('.view').hide();
-        app.revealMenu();
-        hideMainButtons('my-fingerprint');
-        $('#my-fingerprint-id').show();
-*/
         $('#tasks-btn').addClass('active');
-        app.switchView('#my-fingerprint-id', 'My Fingerprint');
+        app.switchView('#my-fingerprint-id', 'ID Card');
         app.firstRunComplete();
       });
     });;
@@ -347,7 +341,7 @@ var app = {
         }
 
         $('#password-login').val('');
-        app.switchView('#my-fingerprint-id', 'My Fingerprint');
+        app.switchView('#my-fingerprint-id', 'ID Card');
         app.displayMyFingerprint(true);
         $('#tasks-btn').addClass('active');
         app.revealMenu();
