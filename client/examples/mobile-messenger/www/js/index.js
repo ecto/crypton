@@ -29,6 +29,9 @@ var app = {
   // 'load', 'deviceready', 'offline', and 'online'.
   bindEvents: function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
+    $('.view').click(function () {
+      app.hideMenu();
+    });
 
     $('#scan').click(function () {
       app.scanQRCode();
