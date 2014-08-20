@@ -201,11 +201,7 @@ var app = {
   getPhoto: function (callback) {
     // via the CAMERA
     function onSuccess (imageURI) {
-      console.log(imageURI);
-      // XXXddahl: should not have to add to the DOM here!
-      // We should just return an image object
-      var img = $('#picture')[0];
-      img.src = "data:image/jpeg;base64," + imageURI;
+      var img = "data:image/jpeg;base64," + imageURI;
       callback(null, img);
     }
 
@@ -229,16 +225,12 @@ var app = {
 
   getImage: function () {
     function onSuccess (imageURI) {
-      console.log(imageURI);
-      var largeImage = document.getElementById('picture');
-      largeImage.style.display = 'block';
-      largeImage.src = imageURI;
-
       qrcode.callback = function (data) {
         // alert(data);
         var userObj = JSON.parse(data);
         app.verifyUser(userObj.username, userObj.fingerprint);
       };
+
       try {
         qrcode.decode(imageURI);
       } catch (e) {
@@ -691,10 +683,8 @@ var app = {
           return callback(null, idCard);
         }
 
-        app.getPhoto(function (err, image) {
-          console.log('getPhoto Callback');
-          console.log(image);
-          photo.keys['imgData'] = image.src;
+        app.getPhoto(function (err, imageSrc) {
+          photo.keys['imgData'] = imageSrc;
 
           photo.save(function (err){
             if (err) {
