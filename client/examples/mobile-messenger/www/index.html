@@ -110,13 +110,24 @@
 	</div>
 
 	<div id="scan-select" class="view">
-	  <div class="btn-group">
+    <p>
+      To add a contact, you must first have them send you
+      their ID card. Depending on the medium they send it over,
+      you may either scan it with your camera or load it from
+      your phone.
+    </p>
+    <p>
+      After you scan the image, you will be asked to verify
+      the integrity of their fingerprint against one
+      supplied by the server.
+    </p>
+	  <div id="scan-select-buttons">
 	    <button type="button" 
-		    class="btn btn-default"
-		    id="scan">Scan QR Code</button> 
+		    class="btn btn-success"
+		    id="scan">Scan QR</button>
 	    <button type="button" 
-		    class="btn btn-default"
-		    id="get-image">Choose ID CARD Image</button>
+		    class="btn btn-primary"
+		    id="get-image">Load file</button>
 	  </div>
 	</div>
 

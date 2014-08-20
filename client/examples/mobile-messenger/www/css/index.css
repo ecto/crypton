@@ -329,6 +329,15 @@ input[type="password"]:focus {
   margin-bottom: 20px;
 }
 
+#scan-select {
+  padding: 20px;
+}
+
+#scan-select-buttons {
+  margin-top: 20px;
+  text-align: center;
+}
+
 .full-message {
     display: none;
 }
