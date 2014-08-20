@@ -297,10 +297,24 @@ input[type="password"]:focus {
     margin-bottom: 1em;
 }
 
+#contacts-list {
+  padding-top: 5px;
+}
+
 #contacts-list li {
-    font-size: 1.7em;
+    font-size: 1.2em;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 0.5em;
+    line-height: 50px;
+    padding: 0 20px;
+    color: #444;
+}
+
+#contact-details {
+    text-align: center;
+}
+
+#contact-details-buttons {
+    margin: 15px 0;
 }
 
 #compose-message {

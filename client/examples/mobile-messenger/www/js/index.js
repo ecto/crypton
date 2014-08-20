@@ -1062,9 +1062,8 @@ var app = {
   },
 
   showComposeUI: function (recipient) {
-    $('.view').hide();
     $('#compose-recipient').val(recipient);
-    $('#compose-message').show();
+    app.switchView('#compose-message', 'Compose Message');
     $('#compose-subject').focus();
     $('#compose-send-btn').click(function () {
       app.send();
