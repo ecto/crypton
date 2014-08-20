@@ -89,7 +89,6 @@ var app = {
 
     $('#contacts-detail-dismiss-btn').click(function () {
       $('.contact-id').remove();
-      $('#contact-details').hide();
       app.switchView('#contacts', 'Contacts');
     });
 
@@ -821,8 +820,8 @@ var app = {
     $(canvas).css({ width: '300px', 'margin-top': '1em'});
     $(canvas).attr({'class': 'contact-id'});
     $('#contact-details').prepend(canvas);
-    $('#contacts').hide();
-    $('#contact-details').show();
+
+    app.switchView('#contact-details', name);
   },
 
   getContactsFromServer: function (callback) {
