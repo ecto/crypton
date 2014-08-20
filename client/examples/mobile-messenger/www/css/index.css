@@ -321,6 +321,14 @@ input[type="password"]:focus {
     height: 8em;
 }
 
+#my-fingerprint-id {
+  text-align: center;
+}
+
+#my-fingerprint-id canvas {
+  margin-bottom: 20px;
+}
+
 .full-message {
     display: none;
 }

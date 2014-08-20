@@ -615,10 +615,10 @@ var app = {
     $('#my-fingerprint-id').append(idCard);
     var idCardTitle = app.username + ' ' + app.APPNAME + ' ID Card';
     var base64Img = idCard.toDataURL("image/png");
-    var html = '<button id="share-my-id-card" '
-             + 'class="btn btn-default">Share My ID Card</button>'
-             + '<button id="retake-id-picture" '
-             + 'class="btn btn-default">Retake ID Picture</button>';
+    var html = '<button id="retake-id-picture" '
+             + 'class="btn btn-primary">Retake ID Picture</button>'
+             + '<button id="share-my-id-card" '
+             + 'class="btn btn-success">Share</button>';
     // XXXddahl: add a 'remove ID picture' button
 
     $('#my-fingerprint-id').append(html);
