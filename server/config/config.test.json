@@ -18,7 +18,8 @@
   "redis": {
     "host": "localhost",
     "port": 6379,
-    "pass": ""
+    "pass": "",
+    "timeout": 1000
   },
   "commitStatusCheckDelay": 100,
   "commitStatusCheckLimit": 100,

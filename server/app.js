@@ -112,10 +112,16 @@ var redis = require('redis').createClient(
   app.config.redis.port,
   app.config.redis.host, {
     /*jslint camelcase: false*/
-    auth_pass: app.config.redis.pass
+    auth_pass: app.config.redis.pass,
+    connect_timeout: app.config.redis.timeout
     /*jslint camelcase: true*/
   }
 );
+
+redis.on('error', function (err) {
+  app.log('fatal', err.message);
+  process.exit(1);
+});
 
 var RedisStore = require('connect-redis')(express);
 app.sessionStore = new RedisStore({
