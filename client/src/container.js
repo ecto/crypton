@@ -162,6 +162,20 @@ Container.prototype.getDiff = function (callback) {
 };
 
 /**!
+ * ### getCompactDiff(callback, options)
+ * Compute difference of container since first version
+ *
+ * Calls back with diff object and without error if successful
+ *
+ * Calls back with error if unsuccessful
+ *
+ * @param {Function} callback
+ */
+Container.prototype.getCompactDiff = function (callback) {
+  callback(null, crypton.diff.create({}, this.keys));
+};
+
+/**!
  * ### getVersions()
  * Return a list of known save point timestamps
  *
@@ -478,6 +492,80 @@ Container.prototype.watch = function (listener) {
  */
 Container.prototype.unwatch = function () {
   delete this._listener;
+};
+
+/**!
+ * ### compact(callback)
+ * Creates an ultimate record where the delta is that
+ * between a blank state and the last known state.
+ * This record is saved while all but the first (blank state)
+ * records are deleted.
+ *
+ * Calls back without error if successful
+ *
+ * Calls back with error if unsuccessful
+ *
+ * @param {Function} callback
+ * @param {Object} options (optional)
+ */
+Container.prototype.compact = function (callback) {
+  // TODO flow control
+  var that = this;
+
+  that.getDiff(function (err, diff) {
+    if (diff) {
+      return callback('Container has unsaved changes');
+    }
+
+    that.getCompactDiff(function (err, compactDiff) {
+      var payload = {
+        recordIndex: that.recordCount,
+        delta: compactDiff
+      };
+
+      var now = +new Date();
+      that.versions[now] = JSON.parse(JSON.stringify(that.keys));
+      that.version = now;
+      that.recordCount++;
+
+      var rawPayloadCiphertext = sjcl.encrypt(that.sessionKey, JSON.stringify(payload), crypton.cipherOptions);
+      var payloadCiphertextHash = sjcl.hash.sha256.hash(JSON.stringify(rawPayloadCiphertext));
+      var payloadSignature = that.session.account.signKeyPrivate.sign(payloadCiphertextHash, crypton.paranoia);
+
+      var payloadCiphertext = {
+        ciphertext: rawPayloadCiphertext,
+        signature: payloadSignature
+      };
+
+      var chunk = {
+        type: 'compactContainer',
+        containerNameHmac: that.getPublicName(),
+        payloadCiphertext: payloadCiphertext
+      };
+
+      new crypton.Transaction(that.session, function (err, tx) {
+        tx.save(chunk, function (err) {
+          if (err) {
+            return callback(err);
+          }
+
+          tx.commit(function (err) {
+            if (err) {
+              return callback(err);
+            }
+
+            that.sync(function (err) {
+              if (err) {
+                return callback(err);
+              }
+
+              callback(null);
+            });
+          });
+        });
+      });
+    });
+  });
 };
 
 })();

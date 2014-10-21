@@ -44,7 +44,8 @@ var Transaction = crypton.Transaction = function (session, callback) {
     'addContainerSessionKeyShare',
     'addContainerRecord',
     'addMessage',
-    'deleteMessage'
+    'deleteMessage',
+    'compactContainer'
   ];
 
   // necessary for testing

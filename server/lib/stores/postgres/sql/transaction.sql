@@ -100,6 +100,30 @@ create temp table txtmp_add_container_record on commit drop as
   from transaction_add_container_record tar
  where transaction_id={{transactionId}};
 
+create temp table txtmp_compact_container on commit drop as
+    select tcc.id,
+           nextval('version_identifier') as container_record_id,
+           coalesce(
+               (select container_id 
+                  from txtmp_add_container
+                 where name_hmac=tcc.name_hmac),
+               (select container_id
+                  from container
+                 where name_hmac=tcc.name_hmac)
+           ) as container_id,
+           coalesce(
+               (select container_session_key_id
+                  from txtmp_add_container_session_key
+                 where name_hmac=tcc.name_hmac),
+               (select container_session_key_id
+                  from container_session_key
+                 where container_id=(select container_id
+                                       from container
+                                      where name_hmac=tcc.name_hmac))
+           ) as container_session_key_id
+  from transaction_compact_container tcc
+ where transaction_id={{transactionId}};
+
 create temp table txtmp_delete_container on commit drop as
     select container_id
       from container
@@ -161,6 +185,17 @@ insert into container_record (container_record_id, container_id,
       join txtmp_add_container_record tx_tacr using (id)
       join transaction t using (transaction_id);
 
+insert into container_record (container_record_id, container_id, 
+    container_session_key_id, account_id, transaction_id,  payload_ciphertext)
+    select tx_tcc.container_record_id, tx_tcc.container_id,
+           tx_tcc.container_session_key_id, t.account_id,
+           t.transaction_id, tcc.payload_ciphertext
+      from transaction_compact_container tcc
+      join txtmp_compact_container tx_tcc using (id)
+      join transaction t using (transaction_id);
+
+/* TODO remove here! */
+
 update container
   set deletion_time = current_timestamp
   where container_id in (
@@ -187,6 +222,11 @@ update transaction
  */
 select pg_notify('container_update', encode(name_hmac, 'escape') || ':' || csks.account_id::text || ':' || csks.to_account_id::text)
   from txtmp_add_container_record tx_tacr
+  join container using (container_id)
+  join container_session_key_share csks using (container_session_key_id);
+
+select pg_notify('container_update', encode(name_hmac, 'escape') || ':' || csks.account_id::text || ':' || csks.to_account_id::text)
+  from txtmp_compact_container tx_tcc
   join container using (container_id)
   join container_session_key_share csks using (container_session_key_id);
 

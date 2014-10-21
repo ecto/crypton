@@ -599,6 +599,14 @@ create table transaction_add_container_record (
     payload_ciphertext varchar not null
 );
 
+create table transaction_compact_container (
+    id int8 not null primary key default nextval('version_identifier'),
+    transaction_id int8 not null references transaction,
+    name_hmac bytea not null,
+    latest_record_id int8,
+    payload_ciphertext varchar not null
+);
+
 create table transaction_add_message (
     id int8 not null primary key default nextval('version_identifier'),
     transaction_id int8 not null references transaction,
